@@ -1,8 +1,14 @@
-package vn.edu.hust.set.tung.musicplayer;
+package vn.edu.hust.set.tung.musicplayer.activity;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.media.MediaPlayer;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
@@ -11,6 +17,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,7 +26,13 @@ import android.view.ViewGroup;
 
 import android.widget.TextView;
 
+import vn.edu.hust.set.tung.musicplayer.R;
+import vn.edu.hust.set.tung.musicplayer.util.SongHelper;
+
 public class MainActivity extends AppCompatActivity {
+
+    private static final int KEY_REQUEST_PERMISSION = 22;
+    public static final String TAG = "main";
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -147,5 +160,41 @@ public class MainActivity extends AppCompatActivity {
             // Show 3 total pages.
             return 3;
         }
+    }
+
+    public boolean permissionOK() {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    /**
+     * request permission from user
+     */
+    public void requestPermission() {
+        ActivityCompat.requestPermissions(
+                MainActivity.this,
+                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                KEY_REQUEST_PERMISSION);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (permissionOK()) {
+            setSong();
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (permissionOK()) {
+            setSong();
+        } else {
+            requestPermission();
+        }
+    }
+
+    public void setSong() {
+        SongHelper songHelper = new SongHelper(this);
     }
 }
