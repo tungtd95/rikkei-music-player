@@ -11,6 +11,7 @@ import java.util.ArrayList;
 
 import vn.edu.hust.set.tung.musicplayer.R;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Album;
+import vn.edu.hust.set.tung.musicplayer.util.LoadBitMapAsync;
 
 /**
  * Created by tungt on 11/24/17.
@@ -35,6 +36,7 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.AlbumHolder>
         Album album = listAlbum.get(position);
         holder.tvAlbumName.setText(album.getName());
         holder.tvAlbumArtist.setText(album.getListSong().get(0).getArtist());
+        new LoadBitMapAsync(album.getListSong(), holder.ivAlbumCover).execute("");
     }
 
     @Override
@@ -64,4 +66,5 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.AlbumHolder>
         this.listAlbum = listAlbum;
         notifyDataSetChanged();
     }
+
 }

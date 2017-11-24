@@ -2,6 +2,9 @@ package vn.edu.hust.set.tung.musicplayer.util;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.MediaMetadataRetriever;
 import android.provider.MediaStore;
 import android.util.Log;
 
@@ -27,13 +30,6 @@ public class SongHelper {
         listSong = getListSong();
         listAlbum = getListAlbum();
         listArtist = getListArtist();
-//        for (Artist artist : listArtist) {
-//            Log.i(TAG, artist.getName() + " " + artist.getListSong().size());
-//        }
-//        Log.i(TAG, "------------------------");
-//        for (Album album : listAlbum) {
-//            Log.i(TAG, album.getName() + " " + album.getListSong().size());
-//        }
     }
 
     public Cursor populateQueries() {
@@ -132,5 +128,16 @@ public class SongHelper {
             }
         }
         return listArtist;
+    }
+
+    public static Bitmap songToBitmap(Song song) {
+        Bitmap bitmap = null;
+        MediaMetadataRetriever metadataRetriever = new MediaMetadataRetriever();
+        metadataRetriever.setDataSource(song.getUri());
+        byte[] data = metadataRetriever.getEmbeddedPicture();
+        if (data != null) {
+            bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+        }
+        return bitmap;
     }
 }

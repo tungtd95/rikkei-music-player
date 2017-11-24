@@ -11,6 +11,7 @@ import java.util.ArrayList;
 
 import vn.edu.hust.set.tung.musicplayer.R;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Artist;
+import vn.edu.hust.set.tung.musicplayer.util.LoadBitMapAsync;
 
 /**
  * Created by tungt on 11/24/17.
@@ -46,6 +47,7 @@ public class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ArtistHold
         String song = artist.getListSong().size() == 1 ? "song" : "songs";
         holder.tvArtistName.setText(artist.getName());
         holder.tvArtistDetail.setText(size + " " + song);
+        new LoadBitMapAsync(artist.getListSong(), holder.ivArtistCover).execute("");
     }
 
     @Override
