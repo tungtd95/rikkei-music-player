@@ -4,4 +4,14 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="appbar_padding_top">8dp</dimen>
+
+    <dimen name="item_image_size">60dp</dimen>
+    <dimen name="item_song_title_size">17sp</dimen>
+    <dimen name="item_artist_size">12sp</dimen>
+
+    <dimen name="padding_small">5dp</dimen>
+    <dimen name="padding_large">15dp</dimen>
+
+    <dimen name="grid_height">200dp</dimen>
+    <dimen name="inner_grid_height">80dp</dimen>
 </resources>
