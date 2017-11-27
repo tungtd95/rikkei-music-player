@@ -20,6 +20,10 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+    repositories {
+        mavenCentral()
+    }
+    compile 'com.sothree.slidinguppanel:library:3.4.0'
     implementation 'com.android.support:appcompat-v7:26.+'
     implementation 'com.android.support:recyclerview-v7:26.+'
     implementation 'com.android.support:design:26.+'

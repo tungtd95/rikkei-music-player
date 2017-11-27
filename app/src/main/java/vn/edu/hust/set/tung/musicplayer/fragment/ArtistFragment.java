@@ -30,7 +30,7 @@ import static vn.edu.hust.set.tung.musicplayer.activity.MainActivity.TAG;
 public class ArtistFragment extends Fragment implements SongManagerObserver {
 
     private static final int GRID_COUNT = 2;
-    private static final int GRID_SIZE = 10;
+    private static final int GRID_SIZE = 15;
 
     private ArrayList<Artist> mListArtist;
     private ArtistAdapter mArtistAdapter;
