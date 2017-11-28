@@ -6,7 +6,6 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,12 +15,11 @@ import java.util.ArrayList;
 import vn.edu.hust.set.tung.musicplayer.R;
 import vn.edu.hust.set.tung.musicplayer.custom.RecyclerItemClickListener;
 import vn.edu.hust.set.tung.musicplayer.custom.SongAdapter;
+import vn.edu.hust.set.tung.musicplayer.custom.ListSongChangedListener;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Album;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Artist;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Song;
 import vn.edu.hust.set.tung.musicplayer.model.observerpattern.SongManagerObserver;
-
-import static vn.edu.hust.set.tung.musicplayer.activity.MainActivity.TAG;
 
 /**
  * Created by tungt on 11/24/17.
@@ -33,10 +31,15 @@ public class SongFragment extends Fragment implements SongManagerObserver{
     private SongAdapter mSongAdapter;
     private RecyclerView rvListSong;
     private LinearLayoutManager mLinearLayoutManager;
+    private ListSongChangedListener mListSongChangedListener;
 
     public SongFragment() {
         mListSong = new ArrayList<>();
         mSongAdapter = new SongAdapter(mListSong);
+    }
+
+    public void setSongChangedListener(ListSongChangedListener listSongChangedListener) {
+        this.mListSongChangedListener = listSongChangedListener;
     }
 
     @Nullable
@@ -54,7 +57,9 @@ public class SongFragment extends Fragment implements SongManagerObserver{
                 new RecyclerItemClickListener.OnItemClickListener() {
                     @Override
                     public void onItemClick(View view, int position) {
-                        Log.i(TAG, "songs fragment clicked: " + position);
+                        if (mListSongChangedListener != null) {
+                            mListSongChangedListener.updateSong(mListSong, position);
+                        }
                     }
 
                     @Override
@@ -63,11 +68,6 @@ public class SongFragment extends Fragment implements SongManagerObserver{
                     }
                 }));
         return view;
-    }
-
-    @Override
-    public void updateSong(ArrayList<Song> listSong, int indexSong) {
-
     }
 
     @Override

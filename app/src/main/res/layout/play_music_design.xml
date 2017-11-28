@@ -1,29 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
-    <LinearLayout
-        android:id="@+id/rlMusicController"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:weightSum="2">
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:weightSum="3">
-
-        <ImageView
-            android:layout_width="@dimen/music_controller_height"
-            android:layout_height="@dimen/music_controller_height"
-            android:src="@drawable/ic_song"/>
-
-        <ProgressBar
-            android:id="@+id/progressBar"
-            style="?android:attr/progressBarStyleHorizontal"
+        android:layout_height="@dimen/music_controller_height">
+        <LinearLayout
+            android:id="@+id/llMusicController"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="3"
-            android:paddingStart="@dimen/small_padding"
-            android:paddingEnd="@dimen/small_padding"/>
-        <Button
-            android:layout_width="@dimen/music_controller_height"
             android:layout_height="@dimen/music_controller_height"
-            android:background="@drawable/ic_play_arrow"/>
-    </LinearLayout>
+            android:weightSum="3"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="@dimen/music_controller_height"
+                android:layout_height="@dimen/music_controller_height"
+                android:src="@drawable/ic_song"/>
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="3"
+                android:paddingStart="@dimen/small_padding"
+                android:paddingEnd="@dimen/small_padding"/>
+            <Button
+                android:layout_width="@dimen/music_controller_height"
+                android:layout_height="@dimen/music_controller_height"
+                android:background="@drawable/ic_play_arrow"/>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/llMusicPlayingNavigator"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/music_controller_height"
+            android:weightSum="3"
+            android:background="@color/colorPrimary"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/small_padding"
+                android:background="@drawable/ic_arrow_back"/>
+            <RelativeLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="3"></RelativeLayout>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ic_search"/>
+        </LinearLayout>
+    </FrameLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@color/colorAccent">
+
+    </RelativeLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@color/backGroundGray">
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rvRecentListSong"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        </android.support.v7.widget.RecyclerView>
+    </RelativeLayout>
 </LinearLayout>

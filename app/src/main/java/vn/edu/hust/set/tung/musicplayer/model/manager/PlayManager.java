@@ -2,11 +2,9 @@ package vn.edu.hust.set.tung.musicplayer.model.manager;
 
 import java.util.ArrayList;
 
-import vn.edu.hust.set.tung.musicplayer.model.obj.Album;
-import vn.edu.hust.set.tung.musicplayer.model.obj.Artist;
+import vn.edu.hust.set.tung.musicplayer.model.observerpattern.PlayManagerObservable;
+import vn.edu.hust.set.tung.musicplayer.model.observerpattern.PlayManagerObserver;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Song;
-import vn.edu.hust.set.tung.musicplayer.model.observerpattern.SongManagerObservable;
-import vn.edu.hust.set.tung.musicplayer.model.observerpattern.SongManagerObserver;
 import vn.edu.hust.set.tung.musicplayer.model.statepattern.NormalState;
 import vn.edu.hust.set.tung.musicplayer.model.statepattern.RepeatingState;
 import vn.edu.hust.set.tung.musicplayer.model.statepattern.ShufferingState;
@@ -16,7 +14,7 @@ import vn.edu.hust.set.tung.musicplayer.model.statepattern.State;
  * Created by tungt on 11/23/17.
  */
 
-public class PlayManager implements State, SongManagerObserver {
+public class PlayManager implements State, PlayManagerObservable {
 
     private State state;
 
@@ -26,10 +24,9 @@ public class PlayManager implements State, SongManagerObserver {
 
     private int indexCurrentSong;
     private ArrayList<Song> listSong;
+    private ArrayList<PlayManagerObserver> listPlayManagerObserver;
 
-    public PlayManager(SongManagerObservable observable) {
-        observable.register(this);
-
+    public PlayManager() {
         normalState = new NormalState(this);
         shufferingState = new ShufferingState(this);
         repeatingState = new RepeatingState(this);
@@ -37,6 +34,7 @@ public class PlayManager implements State, SongManagerObserver {
 
         indexCurrentSong = 0;
         listSong = new ArrayList<>();
+        listPlayManagerObserver = new ArrayList<>();
     }
 
     @Override
@@ -49,24 +47,29 @@ public class PlayManager implements State, SongManagerObserver {
         state.repeat();
     }
 
-    @Override
-    public void updateSong(ArrayList<Song> listSong, int indexSong) {
+    public void updateListSong(ArrayList<Song> listSong, int indexSong) {
         this.listSong = listSong;
         this.indexCurrentSong = indexSong;
+        notifySongChanged();
     }
 
     @Override
-    public void updateListSong(ArrayList<Song> listSong) {
-
+    public void register(PlayManagerObserver observer) {
+        listPlayManagerObserver.add(observer);
     }
 
     @Override
-    public void updateListAlbum(ArrayList<Album> listAlbum) {
-
+    public void notifySongChanged() {
+        for (PlayManagerObserver observer: listPlayManagerObserver) {
+            observer.updateSong(listSong.get(indexCurrentSong));
+        }
     }
 
-    @Override
-    public void updateListArtist(ArrayList<Artist> listArtist) {
+    public ArrayList<Song> getListSong() {
+        return listSong;
+    }
 
+    public void setListSong(ArrayList<Song> listSong) {
+        this.listSong = listSong;
     }
 }

@@ -11,7 +11,6 @@ import vn.edu.hust.set.tung.musicplayer.model.obj.Song;
  */
 
 public interface SongManagerObserver {
-    public void updateSong(ArrayList<Song> listSong, int indexSong);
     public void updateListSong(ArrayList<Song> listSong);
     public void updateListAlbum(ArrayList<Album> listAlbum);
     public void updateListArtist(ArrayList<Artist> listArtist);
