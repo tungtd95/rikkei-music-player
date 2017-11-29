@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import vn.edu.hust.set.tung.musicplayer.R;
 import vn.edu.hust.set.tung.musicplayer.custom.RecyclerItemClickListener;
 import vn.edu.hust.set.tung.musicplayer.custom.SongAdapter;
-import vn.edu.hust.set.tung.musicplayer.custom.ListSongChangedListener;
+import vn.edu.hust.set.tung.musicplayer.model.stratergypattern.ListSongChangedListener;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Album;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Artist;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Song;
@@ -58,7 +58,7 @@ public class SongFragment extends Fragment implements SongManagerObserver{
                     @Override
                     public void onItemClick(View view, int position) {
                         if (mListSongChangedListener != null) {
-                            mListSongChangedListener.updateSong(mListSong, position);
+                            mListSongChangedListener.updateListSong(mListSong, position);
                         }
                     }
 

@@ -5,4 +5,6 @@
     <string name="tab_artists">Artist</string>
 
     <string name="action_settings">Settings</string>
+
+    <string name="action_controlling">vn.edu.hust.set.tung.musicplayer.CONTROLLER</string>
 </resources>

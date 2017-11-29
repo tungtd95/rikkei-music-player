@@ -6,8 +6,8 @@
     <dimen name="appbar_padding_top">8dp</dimen>
 
     <dimen name="item_image_size">60dp</dimen>
-    <dimen name="item_song_title_size">17sp</dimen>
-    <dimen name="item_artist_size">12sp</dimen>
+    <dimen name="text_item_song_title_size">17sp</dimen>
+    <dimen name="text_item_artist_size">12sp</dimen>
 
     <dimen name="padding_small">5dp</dimen>
     <dimen name="padding_large">15dp</dimen>
@@ -20,4 +20,10 @@
     <dimen name="status_bar_height">24dp</dimen>
 
     <dimen name="small_padding">5dp</dimen>
+
+    <dimen name="text_progress_time">30sp</dimen>
+
+    <dimen name="notification_height">120dp</dimen>
+    <dimen name="notification_button">40dp</dimen>
+    <dimen name="notification_button_large">50dp</dimen>
 </resources>

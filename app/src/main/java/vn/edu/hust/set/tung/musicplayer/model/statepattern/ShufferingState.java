@@ -16,11 +16,11 @@ public class ShufferingState implements State {
 
     @Override
     public void shuffer() {
-
+        mPlayManager.setState(mPlayManager.getNormalState());
     }
 
     @Override
     public void repeat() {
-
+        mPlayManager.setState(mPlayManager.getShuffleRepeatState());
     }
 }

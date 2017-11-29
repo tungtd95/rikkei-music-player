@@ -16,11 +16,11 @@ public class NormalState implements State {
 
     @Override
     public void shuffer() {
-
+        mPlayManager.setState(mPlayManager.getShufferingState());
     }
 
     @Override
     public void repeat() {
-
+        mPlayManager.setState(mPlayManager.getRepeatingState());
     }
 }

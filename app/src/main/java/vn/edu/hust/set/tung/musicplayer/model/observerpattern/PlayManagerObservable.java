@@ -7,4 +7,8 @@ package vn.edu.hust.set.tung.musicplayer.model.observerpattern;
 public interface PlayManagerObservable {
     public void register(PlayManagerObserver observer);
     public void notifySongChanged();
+    public void notifyPlayingStateChanged();
+    public void notifyPlayManagerStateChanged();
+    public void notifyPlayingProgressChanged(int progress);
+    public void notifyPlayingForProgressBar(int progress, int duration);
 }

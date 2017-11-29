@@ -8,7 +8,7 @@
         android:id="@+id/ivAlbumCover"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/ic_album"
+        android:background="@drawable/ic_album_accent"
         android:layout_gravity="center"
         android:scaleType="centerCrop"/>
     <RelativeLayout
@@ -21,7 +21,7 @@
             android:id="@+id/tvAlbumName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/item_song_title_size"
+            android:textSize="@dimen/text_item_song_title_size"
             android:textColor="@color/colorWhite"
             android:ellipsize="end"
             android:singleLine="true"/>
@@ -29,7 +29,7 @@
             android:id="@+id/tvAlbumArtist"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/item_artist_size"
+            android:textSize="@dimen/text_item_artist_size"
             android:textColor="@color/colorWhite"
             android:layout_below="@id/tvAlbumName"
             android:ellipsize="end"

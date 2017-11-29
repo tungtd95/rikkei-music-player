@@ -1,8 +1,16 @@
 package vn.edu.hust.set.tung.musicplayer.activity;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.media.Image;
+import android.os.IBinder;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentTransaction;
@@ -18,15 +26,29 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Locale;
 
 import vn.edu.hust.set.tung.musicplayer.R;
+import vn.edu.hust.set.tung.musicplayer.custom.RecyclerItemClickListener;
 import vn.edu.hust.set.tung.musicplayer.custom.SongAdapter;
-import vn.edu.hust.set.tung.musicplayer.custom.ListSongChangedListener;
+import vn.edu.hust.set.tung.musicplayer.model.manager.NManager;
+import vn.edu.hust.set.tung.musicplayer.model.statepattern.NormalState;
+import vn.edu.hust.set.tung.musicplayer.model.statepattern.RepeatingState;
+import vn.edu.hust.set.tung.musicplayer.model.statepattern.ShufferingState;
+import vn.edu.hust.set.tung.musicplayer.model.statepattern.ShuffleRepeat;
+import vn.edu.hust.set.tung.musicplayer.model.statepattern.State;
+import vn.edu.hust.set.tung.musicplayer.model.stratergypattern.ListSongChangedListener;
 import vn.edu.hust.set.tung.musicplayer.fragment.AlbumFragment;
 import vn.edu.hust.set.tung.musicplayer.fragment.ArtistFragment;
 import vn.edu.hust.set.tung.musicplayer.fragment.SongFragment;
@@ -37,7 +59,8 @@ import vn.edu.hust.set.tung.musicplayer.model.observerpattern.PlayManagerObserve
 import vn.edu.hust.set.tung.musicplayer.util.SongHelper;
 
 public class MainActivity extends AppCompatActivity
-        implements SlidingUpPanelLayout.PanelSlideListener, ListSongChangedListener, PlayManagerObserver {
+        implements SlidingUpPanelLayout.PanelSlideListener,
+        ListSongChangedListener, PlayManagerObserver {
 
     private static final int KEY_REQUEST_PERMISSION = 22;
     public static final String TAG = "main";
@@ -46,6 +69,16 @@ public class MainActivity extends AppCompatActivity
     private LinearLayout llMusicController;
     private LinearLayout llMusicNavigator;
     private RecyclerView rvRecentListSong;
+    private ImageView ivNextSong;
+    private ImageView ivPreviousSong;
+    private TextView tvSongPlaying;
+    private TextView tvArtistPlaying;
+    private Button btnPlayController;
+    private FloatingActionButton fabPlayController;
+    private ImageView ivShuffle;
+    private ImageView ivRepeatOne;
+    private TextView tvProgressTime;
+    private ProgressBar pbController;
 
     private SongFragment songFragment;
     private ArtistFragment artistFragment;
@@ -54,12 +87,33 @@ public class MainActivity extends AppCompatActivity
     private SongAdapter mSongAdapter;
 
     private SongManager mSongManager;
-    private PlayManager mPlayManager;
+    private static PlayManager mPlayManager;
+    private NManager mNManager;
+
+    ServiceConnection mServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            PlayManager.MyBinder myBinder = (PlayManager.MyBinder) iBinder;
+            mPlayManager = myBinder.getPlayManagerService();
+            mPlayManager.register(MainActivity.this);
+            mNManager = new NManager(MainActivity.this);
+            mPlayManager.register(mNManager);
+            Log.i(TAG, "service connected");
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Intent intent = new Intent(MainActivity.this, PlayManager.class);
+        bindService(intent, mServiceConnection, BIND_AUTO_CREATE);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -69,6 +123,16 @@ public class MainActivity extends AppCompatActivity
         llMusicController = findViewById(R.id.llMusicController);
         llMusicNavigator = findViewById(R.id.llMusicPlayingNavigator);
         rvRecentListSong = findViewById(R.id.rvRecentListSong);
+        ivNextSong = findViewById(R.id.ivNextSong);
+        ivPreviousSong = findViewById(R.id.ivPreviousSong);
+        tvSongPlaying = findViewById(R.id.tvSongPlaying);
+        tvArtistPlaying = findViewById(R.id.tvArtistPlaying);
+        btnPlayController = findViewById(R.id.btnPlayController);
+        fabPlayController = findViewById(R.id.fabPlayController);
+        ivShuffle = findViewById(R.id.ivShuffle);
+        ivRepeatOne = findViewById(R.id.ivRepeatOne);
+        tvProgressTime = findViewById(R.id.tvProgressTime);
+        pbController = findViewById(R.id.pbController);
 
         mSongManager = new SongManager();
         songFragment = new SongFragment();
@@ -79,12 +143,31 @@ public class MainActivity extends AppCompatActivity
         mSongManager.register(albumFragment);
         songFragment.setSongChangedListener(this);
 
-        mPlayManager = new PlayManager();
-        mPlayManager.register(this);
-        mSongAdapter = new SongAdapter(mPlayManager.getListSong());
-        rvRecentListSong.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
-        rvRecentListSong.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+        mSongAdapter = new SongAdapter(new ArrayList<Song>());
+        rvRecentListSong.setLayoutManager(new LinearLayoutManager(
+                this,
+                LinearLayoutManager.VERTICAL,
+                false
+        ));
+        rvRecentListSong.addItemDecoration(new DividerItemDecoration(
+                this,
+                DividerItemDecoration.VERTICAL
+        ));
         rvRecentListSong.setAdapter(mSongAdapter);
+        rvRecentListSong.addOnItemTouchListener(new RecyclerItemClickListener(
+                this,
+                rvRecentListSong,
+                new RecyclerItemClickListener.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(View view, int position) {
+                        mPlayManager.updateSong(position);
+                    }
+
+                    @Override
+                    public void onItemLongClick(View view, int position) {
+
+                    }
+                }));
 
         ft = getSupportFragmentManager().beginTransaction();
         ft.replace(R.id.flContainer, songFragment);
@@ -122,6 +205,60 @@ public class MainActivity extends AppCompatActivity
         } else {
             requestPermission();
         }
+
+        ivNextSong.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mPlayManager != null) {
+                    mPlayManager.handleNextSong();
+                }
+            }
+        });
+
+        ivPreviousSong.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mPlayManager != null) {
+                    mPlayManager.handlePreviousSong();
+                }
+            }
+        });
+
+        btnPlayController.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mPlayManager != null) {
+                    mPlayManager.handlePlayingState();
+                }
+            }
+        });
+
+        fabPlayController.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mPlayManager != null) {
+                    mPlayManager.handlePlayingState();
+                }
+            }
+        });
+
+        ivRepeatOne.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mPlayManager != null) {
+                    mPlayManager.handleRepeatOne();
+                }
+            }
+        });
+
+        ivShuffle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mPlayManager != null) {
+                    mPlayManager.handleShuffle();
+                }
+            }
+        });
     }
 
 
@@ -136,7 +273,7 @@ public class MainActivity extends AppCompatActivity
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
-        // as you specify play_music_design parent activity in AndroidManifest.xml.
+        // as you specify play_music_screen parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
@@ -168,7 +305,11 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(
+            int requestCode,
+            @NonNull String[] permissions,
+            @NonNull int[] grantResults
+    ) {
         if (permissionOK()) {
             everythingFind();
         }
@@ -208,7 +349,11 @@ public class MainActivity extends AppCompatActivity
      * @param newState
      */
     @Override
-    public void onPanelStateChanged(View panel, SlidingUpPanelLayout.PanelState previousState, SlidingUpPanelLayout.PanelState newState) {
+    public void onPanelStateChanged(
+            View panel,
+            SlidingUpPanelLayout.PanelState previousState,
+            SlidingUpPanelLayout.PanelState newState
+    ) {
         if (newState == SlidingUpPanelLayout.PanelState.COLLAPSED) {
             llMusicNavigator.setVisibility(View.GONE);
             llMusicController.setVisibility(View.VISIBLE);
@@ -229,13 +374,87 @@ public class MainActivity extends AppCompatActivity
      * @param index
      */
     @Override
-    public void updateSong(ArrayList<Song> listSong, int index) {
+    public void updateListSong(ArrayList<Song> listSong, int index) {
         mSongAdapter.setListSong(listSong);
         mPlayManager.updateListSong(listSong, index);
     }
 
     @Override
     public void updateSong(Song song) {
-        Log.i(TAG, "Song changed: " + song.getName());
+        tvSongPlaying.setText(song.getName().trim());
+        tvArtistPlaying.setText(song.getArtist().trim());
+    }
+
+    @Override
+    public void updatePlayingState(boolean isPlaying) {
+        if (isPlaying) {
+            btnPlayController.setBackground(getResources().getDrawable(R.drawable.ic_pause_accent));
+            fabPlayController.setImageDrawable(getResources().getDrawable(R.drawable.ic_pause_primary));
+        } else {
+            btnPlayController.setBackground(getResources().getDrawable(R.drawable.ic_play_accent));
+            fabPlayController.setImageDrawable(getResources().getDrawable(R.drawable.ic_play_primary));
+        }
+    }
+
+    @Override
+    public void updatePlayManagerState(State state) {
+        if (state instanceof NormalState) {
+            ivShuffle.setBackground(getResources().getDrawable(R.drawable.ic_shuffle_unavailable));
+            ivRepeatOne.setBackground(getResources().getDrawable(R.drawable.ic_repeat_one_unavailable));
+            return;
+        }
+        if (state instanceof ShufferingState) {
+            ivShuffle.setBackground(getResources().getDrawable(R.drawable.ic_shuffle_available));
+            ivRepeatOne.setBackground(getResources().getDrawable(R.drawable.ic_repeat_one_unavailable));
+            return;
+        }
+        if (state instanceof RepeatingState) {
+            ivShuffle.setBackground(getResources().getDrawable(R.drawable.ic_shuffle_unavailable));
+            ivRepeatOne.setBackground(getResources().getDrawable(R.drawable.ic_repeat_one_available));
+            return;
+        }
+        if (state instanceof ShuffleRepeat) {
+            ivShuffle.setBackground(getResources().getDrawable(R.drawable.ic_shuffle_available));
+            ivRepeatOne.setBackground(getResources().getDrawable(R.drawable.ic_repeat_one_available));
+        }
+    }
+
+    @Override
+    public void updatePlayingProgress(int progress) {
+        final int second = progress % 60;
+        final int minute = progress / 60;
+        final int hour = progress / 3600;
+        final String sec = second / 10 != 0 ? second + "" : "0" + second;
+        final String min = minute / 10 != 0 ? minute + "" : "0" + minute;
+        final String hou = hour / 10 != 0 ? hour + "" : "0" + hour;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (hour == 0) {
+                    tvProgressTime.setText(min + ":" + sec);
+                } else {
+                    tvProgressTime.setText(hou + ":" + min + ":" + sec);
+                }
+            }
+        });
+    }
+
+    @Override
+    public void updateForProgressBar(final int progress, final int duration) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                pbController.setMax(duration);
+                pbController.setProgress(progress);
+            }
+        });
+    }
+
+    public static class NotificationHandler extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.i(TAG, intent.getAction());
+        }
     }
 }

@@ -1,4 +1,4 @@
-package vn.edu.hust.set.tung.musicplayer.custom;
+package vn.edu.hust.set.tung.musicplayer.model.stratergypattern;
 
 import java.util.ArrayList;
 
@@ -9,5 +9,5 @@ import vn.edu.hust.set.tung.musicplayer.model.obj.Song;
  */
 
 public interface ListSongChangedListener {
-    public void updateSong(ArrayList<Song> listSong, int index);
+    public void updateListSong(ArrayList<Song> listSong, int index);
 }
