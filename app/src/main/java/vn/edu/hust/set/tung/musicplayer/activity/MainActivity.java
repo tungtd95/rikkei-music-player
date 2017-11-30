@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.media.Image;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
@@ -43,11 +44,15 @@ import vn.edu.hust.set.tung.musicplayer.R;
 import vn.edu.hust.set.tung.musicplayer.custom.RecyclerItemClickListener;
 import vn.edu.hust.set.tung.musicplayer.custom.SongAdapter;
 import vn.edu.hust.set.tung.musicplayer.model.manager.NManager;
+import vn.edu.hust.set.tung.musicplayer.model.obj.Album;
+import vn.edu.hust.set.tung.musicplayer.model.obj.Artist;
 import vn.edu.hust.set.tung.musicplayer.model.statepattern.NormalState;
 import vn.edu.hust.set.tung.musicplayer.model.statepattern.RepeatingState;
 import vn.edu.hust.set.tung.musicplayer.model.statepattern.ShufferingState;
 import vn.edu.hust.set.tung.musicplayer.model.statepattern.ShuffleRepeat;
 import vn.edu.hust.set.tung.musicplayer.model.statepattern.State;
+import vn.edu.hust.set.tung.musicplayer.model.stratergypattern.DisplayAlbumDetailListener;
+import vn.edu.hust.set.tung.musicplayer.model.stratergypattern.DisplayArtistDetailListener;
 import vn.edu.hust.set.tung.musicplayer.model.stratergypattern.ListSongChangedListener;
 import vn.edu.hust.set.tung.musicplayer.fragment.AlbumFragment;
 import vn.edu.hust.set.tung.musicplayer.fragment.ArtistFragment;
@@ -58,9 +63,14 @@ import vn.edu.hust.set.tung.musicplayer.model.obj.Song;
 import vn.edu.hust.set.tung.musicplayer.model.observerpattern.PlayManagerObserver;
 import vn.edu.hust.set.tung.musicplayer.util.SongHelper;
 
+import static vn.edu.hust.set.tung.musicplayer.model.manager.NManager.ACTION_NEXT;
+import static vn.edu.hust.set.tung.musicplayer.model.manager.NManager.ACTION_PLAY;
+import static vn.edu.hust.set.tung.musicplayer.model.manager.NManager.ACTION_PREVIOUS;
+
 public class MainActivity extends AppCompatActivity
         implements SlidingUpPanelLayout.PanelSlideListener,
-        ListSongChangedListener, PlayManagerObserver {
+        ListSongChangedListener, PlayManagerObserver,
+        DisplayAlbumDetailListener, DisplayArtistDetailListener {
 
     private static final int KEY_REQUEST_PERMISSION = 22;
     public static final String TAG = "main";
@@ -79,6 +89,9 @@ public class MainActivity extends AppCompatActivity
     private ImageView ivRepeatOne;
     private TextView tvProgressTime;
     private ProgressBar pbController;
+    private CoordinatorLayout clMainContent;
+    private CoordinatorLayout clListSongDetail;
+    private Button btnDismiss;
 
     private SongFragment songFragment;
     private ArtistFragment artistFragment;
@@ -98,7 +111,6 @@ public class MainActivity extends AppCompatActivity
             mPlayManager.register(MainActivity.this);
             mNManager = new NManager(MainActivity.this);
             mPlayManager.register(mNManager);
-            Log.i(TAG, "service connected");
         }
 
         @Override
@@ -133,6 +145,9 @@ public class MainActivity extends AppCompatActivity
         ivRepeatOne = findViewById(R.id.ivRepeatOne);
         tvProgressTime = findViewById(R.id.tvProgressTime);
         pbController = findViewById(R.id.pbController);
+        clMainContent = findViewById(R.id.clMainContent);
+        clListSongDetail = findViewById(R.id.clListSongDetail);
+        btnDismiss = findViewById(R.id.btnDismiss);
 
         mSongManager = new SongManager();
         songFragment = new SongFragment();
@@ -142,6 +157,8 @@ public class MainActivity extends AppCompatActivity
         mSongManager.register(artistFragment);
         mSongManager.register(albumFragment);
         songFragment.setSongChangedListener(this);
+        artistFragment.setDisplayArtistDetailListener(this);
+        albumFragment.setDisplayAlbumDetailListener(this);
 
         mSongAdapter = new SongAdapter(new ArrayList<Song>());
         rvRecentListSong.setLayoutManager(new LinearLayoutManager(
@@ -257,6 +274,14 @@ public class MainActivity extends AppCompatActivity
                 if (mPlayManager != null) {
                     mPlayManager.handleShuffle();
                 }
+            }
+        });
+
+        btnDismiss.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                clMainContent.setVisibility(View.VISIBLE);
+                clListSongDetail.setVisibility(View.GONE);
             }
         });
     }
@@ -450,11 +475,49 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+    @Override
+    public void displayArtistDetail(Artist artist) {
+        clMainContent.setVisibility(View.GONE);
+        clListSongDetail.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void displayAlbumDetail(Album album) {
+        clMainContent.setVisibility(View.GONE);
+        clListSongDetail.setVisibility(View.VISIBLE);
+    }
+
     public static class NotificationHandler extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.i(TAG, intent.getAction());
+            String action = intent.getAction();
+            if (action.equals(ACTION_PLAY)) {
+                if (mPlayManager != null) {
+                    mPlayManager.handlePlayingState();
+                }
+                return;
+            }
+            if (action.equals(ACTION_NEXT)) {
+                if (mPlayManager != null) {
+                    mPlayManager.handleNextSong();
+                }
+                return;
+            }
+            if (action.equals(ACTION_PREVIOUS)) {
+                if (mPlayManager != null) {
+                    mPlayManager.handlePreviousSong();
+                }
+                return;
+            }
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent startMain = new Intent(Intent.ACTION_MAIN);
+        startMain.addCategory(Intent.CATEGORY_HOME);
+        startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(startMain);
     }
 }

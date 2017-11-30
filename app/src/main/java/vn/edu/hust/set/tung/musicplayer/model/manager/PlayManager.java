@@ -81,7 +81,9 @@ public class PlayManager extends Service implements State, PlayManagerObservable
         if (mMediaPlayer.isPlaying()) {
             mMediaPlayer.pause();
         } else if (!mMediaPlayer.isPlaying()) {
-            mMediaPlayer.start();
+            try {
+                mMediaPlayer.start();
+            }catch (Exception e){}
         }
         notifyPlayingStateChanged();
     }

@@ -30,6 +30,11 @@
             android:name=".activity.MainActivity$NotificationHandler"
             android:enabled="true"
             android:exported="false">
+            <intent-filter>
+                <action android:name="play"></action>
+                <action android:name="next"></action>
+                <action android:name="previous"></action>
+            </intent-filter>
         </receiver>
     </application>
 

@@ -20,6 +20,7 @@ import vn.edu.hust.set.tung.musicplayer.model.obj.Album;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Artist;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Song;
 import vn.edu.hust.set.tung.musicplayer.model.observerpattern.SongManagerObserver;
+import vn.edu.hust.set.tung.musicplayer.model.stratergypattern.DisplayAlbumDetailListener;
 
 import static vn.edu.hust.set.tung.musicplayer.activity.MainActivity.TAG;
 
@@ -35,6 +36,7 @@ public class AlbumFragment extends Fragment implements SongManagerObserver{
     private ArrayList<Album> mListAlbum;
     private AlbumAdapter mAlbumAdapter;
     private RecyclerView rvListAlbum;
+    private DisplayAlbumDetailListener displayAlbumDetailListener;
 
     public AlbumFragment() {
         mListAlbum = new ArrayList<>();
@@ -56,7 +58,9 @@ public class AlbumFragment extends Fragment implements SongManagerObserver{
                 new RecyclerItemClickListener.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
-                Log.i(TAG, "album item clicked: " + position);
+                if (displayAlbumDetailListener != null) {
+                    displayAlbumDetailListener.displayAlbumDetail(mListAlbum.get(position));
+                }
             }
 
             @Override
@@ -81,5 +85,9 @@ public class AlbumFragment extends Fragment implements SongManagerObserver{
     @Override
     public void updateListArtist(ArrayList<Artist> listArtist) {
 
+    }
+
+    public void setDisplayAlbumDetailListener(DisplayAlbumDetailListener displayAlbumDetailListener) {
+        this.displayAlbumDetailListener = displayAlbumDetailListener;
     }
 }

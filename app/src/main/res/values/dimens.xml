@@ -9,6 +9,9 @@
     <dimen name="text_item_song_title_size">17sp</dimen>
     <dimen name="text_item_artist_size">12sp</dimen>
 
+    <dimen name="text_notification_song_size">14sp</dimen>
+    <dimen name="text_notification_artist_size">10sp</dimen>
+
     <dimen name="padding_small">5dp</dimen>
     <dimen name="padding_large">15dp</dimen>
 
@@ -23,7 +26,8 @@
 
     <dimen name="text_progress_time">30sp</dimen>
 
-    <dimen name="notification_height">120dp</dimen>
-    <dimen name="notification_button">40dp</dimen>
-    <dimen name="notification_button_large">50dp</dimen>
+    <dimen name="notification_height">90dp</dimen>
+    <dimen name="notification_height_normal">60dp</dimen>
+    <dimen name="notification_button">35dp</dimen>
+    <dimen name="notification_button_large">45dp</dimen>
 </resources>

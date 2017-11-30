@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:orientation="horizontal"
+    android:background="@color/colorPrimaryTrans"
+    android:weightSum="1">
+    <ImageView
+        android:layout_width="@dimen/notification_height_normal"
+        android:layout_height="@dimen/notification_height_normal"
+        android:src="@drawable/ic_album_accent"/>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:layout_marginLeft="@dimen/padding_small">
+
+        <TextView
+            android:id="@+id/tvNotificationSongNormal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:textColor="@color/colorWhite"
+            android:textSize="@dimen/text_notification_song_size" />
+
+        <TextView
+            android:id="@+id/tvNotificationArtistNormal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/tvNotificationSongNormal"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:textColor="@color/colorWhiteTrans"
+            android:textSize="@dimen/text_notification_artist_size" />
+    </RelativeLayout>
+    <ImageView
+        android:id="@+id/ivNotificationPreviousNormal"
+        android:layout_width="@dimen/notification_button"
+        android:layout_height="@dimen/notification_button"
+        android:background="@drawable/ic_skip_previous" />
+
+    <ImageView
+        android:id="@+id/ivNotificationPlayNormal"
+        android:layout_width="@dimen/notification_button_large"
+        android:layout_height="@dimen/notification_button_large"
+        android:src="@drawable/ic_play" />
+
+    <ImageView
+        android:id="@+id/ivNotificationNextNormal"
+        android:layout_width="@dimen/notification_button"
+        android:layout_height="@dimen/notification_button"
+        android:background="@drawable/ic_skip_next" />
+</LinearLayout>

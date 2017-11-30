@@ -5,14 +5,11 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.support.v4.app.NotificationCompat;
 import android.widget.RemoteViews;
 
 import vn.edu.hust.set.tung.musicplayer.R;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Song;
-import vn.edu.hust.set.tung.musicplayer.model.observerpattern.PlayManagerObservable;
 import vn.edu.hust.set.tung.musicplayer.model.observerpattern.PlayManagerObserver;
 import vn.edu.hust.set.tung.musicplayer.model.statepattern.State;
 
@@ -50,22 +47,38 @@ public class NManager implements PlayManagerObserver {
         previousIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent pendingPrevious = PendingIntent.getBroadcast(mContext, 0, previousIntent, 0);
 
-        RemoteViews remoteViews = new RemoteViews(mContext.getPackageName(), R.layout.notification_controller);
+        RemoteViews remoteViewsExpanded = new RemoteViews(mContext.getPackageName(), R.layout.notification_controller_expanded);
         if (isPlaying) {
-            remoteViews.setImageViewResource(R.id.ivNotificationPlay, R.drawable.ic_pause);
+            remoteViewsExpanded.setImageViewResource(R.id.ivNotificationPlay, R.drawable.ic_pause);
         } else {
-            remoteViews.setImageViewResource(R.id.ivNotificationPlay, R.drawable.ic_play);
+            remoteViewsExpanded.setImageViewResource(R.id.ivNotificationPlay, R.drawable.ic_play);
         }
-        remoteViews.setTextViewText(R.id.tvNotificationSong, mSong.getName());
-        remoteViews.setTextViewText(R.id.tvNotificationArtist, mSong.getArtist());
-        remoteViews.setOnClickPendingIntent(R.id.ivNotificationPlay, pendingPlay);
-        remoteViews.setOnClickPendingIntent(R.id.ivNotificationNext, pendingNext);
-        remoteViews.setOnClickPendingIntent(R.id.ivNotificationPrevious, pendingPrevious);
+        remoteViewsExpanded.setTextViewText(R.id.tvNotificationSong, mSong.getName());
+        remoteViewsExpanded.setTextViewText(R.id.tvNotificationArtist, mSong.getArtist());
+        remoteViewsExpanded.setOnClickPendingIntent(R.id.ivNotificationPlay, pendingPlay);
+        remoteViewsExpanded.setOnClickPendingIntent(R.id.ivNotificationNext, pendingNext);
+        remoteViewsExpanded.setOnClickPendingIntent(R.id.ivNotificationPrevious, pendingPrevious);
+
+        RemoteViews remoteViewsNormal = new RemoteViews(mContext.getPackageName(), R.layout.notification_controller_normal);
+        if (isPlaying) {
+            remoteViewsNormal.setImageViewResource(R.id.ivNotificationPlayNormal, R.drawable.ic_pause);
+        } else {
+            remoteViewsNormal.setImageViewResource(R.id.ivNotificationPlayNormal, R.drawable.ic_play);
+        }
+        remoteViewsNormal.setTextViewText(R.id.tvNotificationSongNormal, mSong.getName());
+        remoteViewsNormal.setTextViewText(R.id.tvNotificationArtistNormal, mSong.getArtist());
+        remoteViewsNormal.setOnClickPendingIntent(R.id.ivNotificationPlayNormal, pendingPlay);
+        remoteViewsNormal.setOnClickPendingIntent(R.id.ivNotificationNextNormal, pendingNext);
+        remoteViewsNormal.setOnClickPendingIntent(R.id.ivNotificationPreviousNormal, pendingPrevious);
+
         mNotificationBuilder = new NotificationCompat.Builder(mContext, "")
-                .setCustomBigContentView(remoteViews)
-                .setCustomContentView(remoteViews)
+                .setCustomBigContentView(remoteViewsExpanded)
+                .setCustomContentView(remoteViewsNormal)
                 .setAutoCancel(false)
-                .setSmallIcon(R.mipmap.ic_launcher);
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setPriority(Notification.PRIORITY_MAX)
+                .setUsesChronometer(true)
+                .setOngoing(true);
         mNotificationManager.notify(KEY_NOTIFICATION_ID, mNotificationBuilder.build());
     }
 
@@ -79,7 +92,8 @@ public class NManager implements PlayManagerObserver {
 
     @Override
     public void updatePlayingState(boolean isPlaying) {
-        displayNotification(isPlaying);
+        if (mSong != null)
+            displayNotification(isPlaying);
     }
 
     @Override
