@@ -3,8 +3,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="vn.edu.hust.set.tung.musicplayer.activity.MainActivity">
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/action_search"
+        android:orderInCategory="1"
+        android:title=""
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/ic_search"></item>
+    <item
+        android:id="@+id/action_change_view"
+        android:icon="@drawable/ic_view_list"
         android:orderInCategory="100"
-        android:title="@string/action_settings"
-        app:showAsAction="never" />
+        android:title=""
+        app:showAsAction="ifRoom" />
 </menu>

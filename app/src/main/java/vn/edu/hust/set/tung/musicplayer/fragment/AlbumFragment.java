@@ -3,7 +3,9 @@ package vn.edu.hust.set.tung.musicplayer.fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,6 +23,7 @@ import vn.edu.hust.set.tung.musicplayer.model.obj.Artist;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Song;
 import vn.edu.hust.set.tung.musicplayer.model.observerpattern.SongManagerObserver;
 import vn.edu.hust.set.tung.musicplayer.model.stratergypattern.DisplayAlbumDetailListener;
+import vn.edu.hust.set.tung.musicplayer.model.stratergypattern.FragmentViewChangedListener;
 
 import static vn.edu.hust.set.tung.musicplayer.activity.MainActivity.TAG;
 
@@ -28,7 +31,7 @@ import static vn.edu.hust.set.tung.musicplayer.activity.MainActivity.TAG;
  * Created by tungt on 11/24/17.
  */
 
-public class AlbumFragment extends Fragment implements SongManagerObserver{
+public class AlbumFragment extends Fragment implements SongManagerObserver {
 
     private static final int GRID_COUNT = 2;
     private static final int GRID_SIZE = 13;
@@ -37,6 +40,11 @@ public class AlbumFragment extends Fragment implements SongManagerObserver{
     private AlbumAdapter mAlbumAdapter;
     private RecyclerView rvListAlbum;
     private DisplayAlbumDetailListener displayAlbumDetailListener;
+    private boolean isGrid = true;
+    FragmentViewChangedListener fragmentViewChangedListener;
+    public void setFragmentViewChangedListener(FragmentViewChangedListener listener) {
+        this.fragmentViewChangedListener = listener;
+    }
 
     public AlbumFragment() {
         mListAlbum = new ArrayList<>();
@@ -48,26 +56,33 @@ public class AlbumFragment extends Fragment implements SongManagerObserver{
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_albums, container, false);
         rvListAlbum = view.findViewById(R.id.rvListAlbum);
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), GRID_COUNT);
-        rvListAlbum.addItemDecoration(new ItemDecorationAlbumColumns(GRID_SIZE, GRID_COUNT));
-        rvListAlbum.setLayoutManager(gridLayoutManager);
+        mAlbumAdapter.setGrid(isGrid);
+        if (isGrid) {
+            GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), GRID_COUNT);
+            rvListAlbum.addItemDecoration(new ItemDecorationAlbumColumns(GRID_SIZE, GRID_COUNT));
+            rvListAlbum.setLayoutManager(gridLayoutManager);
+        } else {
+            LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
+            rvListAlbum.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL));
+            rvListAlbum.setLayoutManager(layoutManager);
+        }
         rvListAlbum.setAdapter(mAlbumAdapter);
         rvListAlbum.addOnItemTouchListener(new RecyclerItemClickListener(
                 getActivity(),
                 rvListAlbum,
                 new RecyclerItemClickListener.OnItemClickListener() {
-            @Override
-            public void onItemClick(View view, int position) {
-                if (displayAlbumDetailListener != null) {
-                    displayAlbumDetailListener.displayAlbumDetail(mListAlbum.get(position));
-                }
-            }
+                    @Override
+                    public void onItemClick(View view, int position) {
+                        if (displayAlbumDetailListener != null) {
+                            displayAlbumDetailListener.displayAlbumDetail(mListAlbum.get(position));
+                        }
+                    }
 
-            @Override
-            public void onItemLongClick(View view, int position) {
+                    @Override
+                    public void onItemLongClick(View view, int position) {
 
-            }
-        }));
+                    }
+                }));
         return view;
     }
 
@@ -89,5 +104,16 @@ public class AlbumFragment extends Fragment implements SongManagerObserver{
 
     public void setDisplayAlbumDetailListener(DisplayAlbumDetailListener displayAlbumDetailListener) {
         this.displayAlbumDetailListener = displayAlbumDetailListener;
+    }
+
+    public boolean isGrid() {
+        return isGrid;
+    }
+
+    public void setGrid(boolean grid) {
+        isGrid = grid;
+        if (fragmentViewChangedListener != null) {
+            fragmentViewChangedListener.changedViewFragment(this);
+        }
     }
 }

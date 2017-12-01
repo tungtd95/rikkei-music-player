@@ -8,13 +8,13 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.media.Image;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -56,6 +56,7 @@ import vn.edu.hust.set.tung.musicplayer.model.statepattern.ShuffleRepeat;
 import vn.edu.hust.set.tung.musicplayer.model.statepattern.State;
 import vn.edu.hust.set.tung.musicplayer.model.stratergypattern.DisplayAlbumDetailListener;
 import vn.edu.hust.set.tung.musicplayer.model.stratergypattern.DisplayArtistDetailListener;
+import vn.edu.hust.set.tung.musicplayer.model.stratergypattern.FragmentViewChangedListener;
 import vn.edu.hust.set.tung.musicplayer.model.stratergypattern.ListSongChangedListener;
 import vn.edu.hust.set.tung.musicplayer.fragment.AlbumFragment;
 import vn.edu.hust.set.tung.musicplayer.fragment.ArtistFragment;
@@ -74,7 +75,8 @@ import static vn.edu.hust.set.tung.musicplayer.model.manager.NManager.ACTION_PRE
 public class MainActivity extends AppCompatActivity
         implements SlidingUpPanelLayout.PanelSlideListener,
         ListSongChangedListener, PlayManagerObserver,
-        DisplayAlbumDetailListener, DisplayArtistDetailListener {
+        DisplayAlbumDetailListener, DisplayArtistDetailListener,
+        FragmentViewChangedListener{
 
     private static final int KEY_REQUEST_PERMISSION = 22;
     public static final String TAG = "main";
@@ -102,6 +104,8 @@ public class MainActivity extends AppCompatActivity
     private RecyclerView rvListSorting;
     private CoordinatorLayout clSortPlayingList;
     private ImageView ivPlayingBack;
+    private MenuItem miChangeView;
+    TabLayout tabLayout;
 
     private SongFragment songFragment;
     private ArtistFragment artistFragment;
@@ -138,9 +142,9 @@ public class MainActivity extends AppCompatActivity
         Intent intent = new Intent(MainActivity.this, PlayManager.class);
         bindService(intent, mServiceConnection, BIND_AUTO_CREATE);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
+        tabLayout = findViewById(R.id.tabs);
         mSlidingUpPanelLayout = findViewById(R.id.slidingUpPanel);
         mSlidingUpPanelLayout.addPanelSlideListener(this);
         llMusicController = findViewById(R.id.llMusicController);
@@ -176,6 +180,8 @@ public class MainActivity extends AppCompatActivity
         songFragment.setSongChangedListener(this);
         artistFragment.setDisplayArtistDetailListener(this);
         albumFragment.setDisplayAlbumDetailListener(this);
+        artistFragment.setFragmentViewChangedListener(this);
+        albumFragment.setFragmentViewChangedListener(this);
 
         mSongDetailAdapter = new SongAdapter(new ArrayList<Song>());
         mSongAdapter = new SongAdapter(new ArrayList<Song>());
@@ -256,12 +262,17 @@ public class MainActivity extends AppCompatActivity
                 if (tab.getPosition() == 0) {
                     ft.replace(R.id.flContainer, songFragment);
                     ft.commit();
+                    if (miChangeView != null) {
+                        miChangeView.setIcon(R.drawable.ic_view_list);
+                    }
                 } else if (tab.getPosition() == 1) {
                     ft.replace(R.id.flContainer, albumFragment);
                     ft.commit();
+                    setAlbumActionIcon();
                 } else if (tab.getPosition() == 2) {
                     ft.replace(R.id.flContainer, artistFragment);
                     ft.commit();
+                    setArtistActionIcon();
                 }
             }
 
@@ -396,6 +407,7 @@ public class MainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        miChangeView = menu.findItem(R.id.action_change_view);
         return true;
     }
 
@@ -407,7 +419,14 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_change_view) {
+            if (tabLayout.getSelectedTabPosition() == 1) {
+                albumFragment.setGrid(!albumFragment.isGrid());
+            } else if (tabLayout.getSelectedTabPosition() == 2) {
+                artistFragment.setGrid(!artistFragment.isGrid());
+            }
+            return true;
+        } else if (id == R.id.action_search) {
             return true;
         }
 
@@ -623,6 +642,39 @@ public class MainActivity extends AppCompatActivity
         clSortPlayingList.setVisibility(View.VISIBLE);
         mSlidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
         mSongSortingAdapter.setListSong(mPlayManager.getListSong());
+    }
+
+    @Override
+    public void changedViewFragment(Fragment fragment) {
+        if (fragment instanceof AlbumFragment) {
+            ft = getSupportFragmentManager().beginTransaction();
+            ft.detach(albumFragment);
+            ft.attach(albumFragment);
+            ft.commit();
+            setAlbumActionIcon();
+        } else if (fragment instanceof ArtistFragment) {
+            ft = getSupportFragmentManager().beginTransaction();
+            ft.detach(artistFragment);
+            ft.attach(artistFragment);
+            ft.commit();
+            setArtistActionIcon();
+        }
+    }
+
+    public void setAlbumActionIcon() {
+        if (albumFragment.isGrid()) {
+            miChangeView.setIcon(R.drawable.ic_view_list);
+        } else {
+            miChangeView.setIcon(R.drawable.ic_view_grid);
+        }
+    }
+
+    public void setArtistActionIcon() {
+        if (artistFragment.isGrid()) {
+            miChangeView.setIcon(R.drawable.ic_view_list);
+        } else {
+            miChangeView.setIcon(R.drawable.ic_view_grid);
+        }
     }
 
     public static class NotificationHandler extends BroadcastReceiver {

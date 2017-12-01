@@ -24,6 +24,7 @@ import static vn.edu.hust.set.tung.musicplayer.activity.MainActivity.TAG;
 public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.AlbumHolder> {
 
     private ArrayList<Album> listAlbum;
+    private boolean isGrid = true;
 
     public AlbumAdapter(ArrayList<Album> listAlbum) {
         this.listAlbum = listAlbum;
@@ -31,8 +32,25 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.AlbumHolder>
 
     @Override
     public AlbumHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_album, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(viewType, parent, false);
         return new AlbumHolder(view);
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        if (isGrid) {
+            return R.layout.item_album;
+        } else {
+            return R.layout.item_album_list;
+        }
+    }
+
+    public boolean isGrid() {
+        return isGrid;
+    }
+
+    public void setGrid(boolean grid) {
+        isGrid = grid;
     }
 
     @Override
@@ -76,5 +94,4 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.AlbumHolder>
         this.listAlbum = listAlbum;
         notifyDataSetChanged();
     }
-
 }

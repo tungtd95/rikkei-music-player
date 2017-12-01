@@ -21,6 +21,7 @@ import vn.edu.hust.set.tung.musicplayer.util.LoadBitMapAsync;
 public class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ArtistHolder> {
 
     private ArrayList<Artist> listArtist;
+    private boolean isGrid = true;
 
     public ArtistAdapter(ArrayList<Artist> listArtist) {
         this.listArtist = listArtist;
@@ -28,9 +29,27 @@ public class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ArtistHold
 
     @Override
     public ArtistHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_artist, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(viewType, parent, false);
         return new ArtistHolder(view);
     }
+
+    @Override
+    public int getItemViewType(int position) {
+        if (isGrid) {
+            return R.layout.item_artist;
+        } else {
+            return R.layout.item_artist_list;
+        }
+    }
+
+    public boolean isGrid() {
+        return isGrid;
+    }
+
+    public void setGrid(boolean grid) {
+        isGrid = grid;
+    }
+
 
     public ArrayList<Artist> getListArtist() {
         return listArtist;
