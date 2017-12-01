@@ -14,6 +14,8 @@ import vn.edu.hust.set.tung.musicplayer.model.obj.Album;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Artist;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Song;
 
+import static vn.edu.hust.set.tung.musicplayer.activity.MainActivity.TAG;
+
 /**
  * Created by tungt on 11/23/17.
  */
@@ -21,15 +23,8 @@ import vn.edu.hust.set.tung.musicplayer.model.obj.Song;
 public class SongHelper {
 
     Context context;
-    ArrayList<Song> listSong = new ArrayList<>();
-    ArrayList<Album> listAlbum = new ArrayList<>();
-    ArrayList<Artist> listArtist = new ArrayList<>();
-
     public SongHelper(Context context) {
         this.context = context;
-        listSong = getListSong();
-        listAlbum = getListAlbum();
-        listArtist = getListArtist();
     }
 
     public Cursor populateQueries() {
@@ -73,7 +68,7 @@ public class SongHelper {
         return list;
     }
 
-    public ArrayList<Album> getListAlbum() {
+    public ArrayList<Album> getListAlbum(ArrayList<Song> listSong) {
         ArrayList<Album> listAlbum = new ArrayList<>();
         for (Song song : listSong) {
             String a = song.getAlbum();
@@ -100,7 +95,7 @@ public class SongHelper {
         return listAlbum;
     }
 
-    public ArrayList<Artist> getListArtist() {
+    public ArrayList<Artist> getListArtist(ArrayList<Song> listSong) {
         ArrayList<Artist> listArtist = new ArrayList<>();
         for (Song song : listSong) {
             String artist = song.getArtist();

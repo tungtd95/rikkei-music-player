@@ -1,5 +1,7 @@
 package vn.edu.hust.set.tung.musicplayer.model.obj;
 
+import android.graphics.Bitmap;
+
 import java.util.ArrayList;
 
 /**
@@ -9,6 +11,7 @@ import java.util.ArrayList;
 public class Artist {
     private String name;
     private ArrayList<Song> listSong;
+    Bitmap bitmapCover;
 
     public Artist(String name) {
         this.name = name;
@@ -29,5 +32,13 @@ public class Artist {
 
     public void setListSong(ArrayList<Song> listSong) {
         this.listSong = listSong;
+    }
+
+    public void setBitmapCover(Bitmap bitmapCover) {
+        this.bitmapCover = bitmapCover;
+    }
+
+    public Bitmap getBitmapCover() {
+        return bitmapCover;
     }
 }

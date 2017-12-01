@@ -15,12 +15,16 @@
             android:id="@+id/llMusicController"
             android:layout_width="match_parent"
             android:layout_height="@dimen/music_controller_height"
-            android:weightSum="3">
+            android:weightSum="3"
+            android:background="@color/colorPrimary"
+            android:gravity="center">
 
             <ImageView
-                android:layout_width="@dimen/music_controller_height"
-                android:layout_height="@dimen/music_controller_height"
-                android:src="@drawable/ic_song_accent" />
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="@dimen/small_padding"
+                android:layout_marginLeft="@dimen/small_padding"
+                android:src="@drawable/ic_song" />
 
             <RelativeLayout
                 android:layout_width="0dp"
@@ -42,7 +46,7 @@
                     android:textSize="@dimen/text_item_song_title_size"
                     android:ellipsize="end"
                     android:singleLine="true"
-                    android:textColor="@color/colorPrimary"
+                    android:textColor="@color/colorWhite"
                     android:layout_below="@id/pbController"/>
 
                 <TextView
@@ -51,15 +55,18 @@
                     android:layout_height="wrap_content"
                     android:textSize="@dimen/text_item_artist_size"
                     android:layout_below="@id/tvSongPlaying"
+                    android:textColor="@color/colorWhiteTrans"
                     android:ellipsize="end"
                     android:singleLine="true"/>
             </RelativeLayout>
 
-            <Button
-                android:id="@+id/btnPlayController"
-                android:layout_width="@dimen/music_controller_height"
-                android:layout_height="@dimen/music_controller_height"
-                android:background="@drawable/ic_play_accent" />
+            <ImageView
+                android:id="@+id/ivPlayController"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="@dimen/small_padding"
+                android:layout_marginLeft="@dimen/small_padding"
+                android:background="@drawable/ic_play" />
         </LinearLayout>
 
         <LinearLayout
@@ -72,6 +79,7 @@
             android:weightSum="3">
 
             <ImageView
+                android:id="@+id/ivPlayingBack"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/small_padding"

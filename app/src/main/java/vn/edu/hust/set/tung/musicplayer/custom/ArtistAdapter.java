@@ -1,5 +1,6 @@
 package vn.edu.hust.set.tung.musicplayer.custom;
 
+import android.os.AsyncTask;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -47,7 +48,13 @@ public class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ArtistHold
         String song = artist.getListSong().size() == 1 ? "song" : "songs";
         holder.tvArtistName.setText(artist.getName());
         holder.tvArtistDetail.setText(size + " " + song);
-        new LoadBitMapAsync(artist.getListSong(), holder.ivArtistCover).execute("");
+        if (artist.getBitmapCover() != null) {
+            holder.ivArtistCover.setImageBitmap(artist.getBitmapCover());
+            return;
+        }
+        LoadBitMapAsync loadBitMapAsync = new LoadBitMapAsync(artist.getListSong(), holder.ivArtistCover);
+        loadBitMapAsync.setArtist(artist);
+        loadBitMapAsync.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     @Override

@@ -12,10 +12,11 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <include layout="@layout/main_content"></include>
-        <include layout="@layout/list_song_detail"></include>
+        <include layout="@layout/component_main_content"></include>
+        <include layout="@layout/component_list_song_detail"></include>
+        <include layout="@layout/component_sort_playing_list"></include>
     </FrameLayout>
 
-    <include layout="@layout/play_music_screen" />
+    <include layout="@layout/component_play_music_screen" />
 
 </com.sothree.slidinguppanel.SlidingUpPanelLayout>

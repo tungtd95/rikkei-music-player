@@ -8,7 +8,7 @@ import vn.edu.hust.set.tung.musicplayer.model.statepattern.State;
  */
 
 public interface PlayManagerObserver {
-    public void updateSong(Song song);
+    public void updateSong(Song song, int index);
     public void updatePlayingState(boolean isPlaying);
     public void updatePlayManagerState(State state);
     public void updatePlayingProgress(int progress);

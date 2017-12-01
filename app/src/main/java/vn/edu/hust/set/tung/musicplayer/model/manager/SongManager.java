@@ -63,6 +63,11 @@ public class SongManager implements SongManagerObservable {
     }
 
     public void setListAlbum(ArrayList<Album> listAlbum) {
+        for (int i = 0; i < listAlbum.size(); i++) {
+            if (i != 0) {
+                listAlbum.get(i).getListSong().remove(0);
+            }
+        }
         this.listAlbum = listAlbum;
         notifyListAlbumChanged();
     }
@@ -72,6 +77,11 @@ public class SongManager implements SongManagerObservable {
     }
 
     public void setListArtist(ArrayList<Artist> listArtist) {
+        for (int i = 0; i < listArtist.size(); i++) {
+            if (i != 0) {
+                listArtist.get(i).getListSong().remove(0);
+            }
+        }
         this.listArtist = listArtist;
         notifyListArtistChanged();
     }

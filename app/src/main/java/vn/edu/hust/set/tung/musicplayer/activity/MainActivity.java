@@ -6,6 +6,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.Image;
 import android.os.IBinder;
@@ -23,22 +24,24 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 
 import android.os.Bundle;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
-import java.text.SimpleDateFormat;
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Locale;
+import java.util.Collections;
 
 import vn.edu.hust.set.tung.musicplayer.R;
 import vn.edu.hust.set.tung.musicplayer.custom.RecyclerItemClickListener;
@@ -61,6 +64,7 @@ import vn.edu.hust.set.tung.musicplayer.model.manager.PlayManager;
 import vn.edu.hust.set.tung.musicplayer.model.manager.SongManager;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Song;
 import vn.edu.hust.set.tung.musicplayer.model.observerpattern.PlayManagerObserver;
+import vn.edu.hust.set.tung.musicplayer.util.Finals;
 import vn.edu.hust.set.tung.musicplayer.util.SongHelper;
 
 import static vn.edu.hust.set.tung.musicplayer.model.manager.NManager.ACTION_NEXT;
@@ -83,7 +87,7 @@ public class MainActivity extends AppCompatActivity
     private ImageView ivPreviousSong;
     private TextView tvSongPlaying;
     private TextView tvArtistPlaying;
-    private Button btnPlayController;
+    private ImageView ivPlayController;
     private FloatingActionButton fabPlayController;
     private ImageView ivShuffle;
     private ImageView ivRepeatOne;
@@ -91,17 +95,24 @@ public class MainActivity extends AppCompatActivity
     private ProgressBar pbController;
     private CoordinatorLayout clMainContent;
     private CoordinatorLayout clListSongDetail;
-    private Button btnDismiss;
+    private ImageView ivDetailBack;
+    private ImageView ivCoverDetail;
+    private RecyclerView rvListDetail;
+    private ImageView ivSortingBack;
+    private RecyclerView rvListSorting;
+    private CoordinatorLayout clSortPlayingList;
+    private ImageView ivPlayingBack;
 
     private SongFragment songFragment;
     private ArtistFragment artistFragment;
     private AlbumFragment albumFragment;
     private FragmentTransaction ft;
     private SongAdapter mSongAdapter;
-
+    private SongAdapter mSongDetailAdapter;
     private SongManager mSongManager;
     private static PlayManager mPlayManager;
     private NManager mNManager;
+    private SongAdapter mSongSortingAdapter;
 
     ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
@@ -139,7 +150,7 @@ public class MainActivity extends AppCompatActivity
         ivPreviousSong = findViewById(R.id.ivPreviousSong);
         tvSongPlaying = findViewById(R.id.tvSongPlaying);
         tvArtistPlaying = findViewById(R.id.tvArtistPlaying);
-        btnPlayController = findViewById(R.id.btnPlayController);
+        ivPlayController = findViewById(R.id.ivPlayController);
         fabPlayController = findViewById(R.id.fabPlayController);
         ivShuffle = findViewById(R.id.ivShuffle);
         ivRepeatOne = findViewById(R.id.ivRepeatOne);
@@ -147,7 +158,13 @@ public class MainActivity extends AppCompatActivity
         pbController = findViewById(R.id.pbController);
         clMainContent = findViewById(R.id.clMainContent);
         clListSongDetail = findViewById(R.id.clListSongDetail);
-        btnDismiss = findViewById(R.id.btnDismiss);
+        ivDetailBack = findViewById(R.id.ivDetailBack);
+        ivCoverDetail = findViewById(R.id.ivCoverDetail);
+        rvListDetail = findViewById(R.id.rvListDetail);
+        ivSortingBack = findViewById(R.id.ivSortingBack);
+        rvListSorting = findViewById(R.id.rvListSorting);
+        clSortPlayingList = findViewById(R.id.clSortPlayingList);
+        ivPlayingBack = findViewById(R.id.ivPlayingBack);
 
         mSongManager = new SongManager();
         songFragment = new SongFragment();
@@ -160,7 +177,11 @@ public class MainActivity extends AppCompatActivity
         artistFragment.setDisplayArtistDetailListener(this);
         albumFragment.setDisplayAlbumDetailListener(this);
 
+        mSongDetailAdapter = new SongAdapter(new ArrayList<Song>());
         mSongAdapter = new SongAdapter(new ArrayList<Song>());
+        mSongSortingAdapter = new SongAdapter(new ArrayList<Song>());
+        mSongSortingAdapter.setSorting(true);
+
         rvRecentListSong.setLayoutManager(new LinearLayoutManager(
                 this,
                 LinearLayoutManager.VERTICAL,
@@ -182,9 +203,47 @@ public class MainActivity extends AppCompatActivity
 
                     @Override
                     public void onItemLongClick(View view, int position) {
-
+                        displaySortingList();
                     }
                 }));
+
+        rvListDetail.setLayoutManager(new LinearLayoutManager(
+                this,
+                LinearLayoutManager.VERTICAL,
+                false
+        ));
+        rvListDetail.addItemDecoration(new DividerItemDecoration(
+                this,
+                DividerItemDecoration.VERTICAL
+        ));
+        rvListDetail.setAdapter(mSongDetailAdapter);
+        rvListDetail.addOnItemTouchListener(new RecyclerItemClickListener(
+                this,
+                rvListDetail,
+                new RecyclerItemClickListener.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(View view, int position) {
+                        mPlayManager.updateListSong(mSongDetailAdapter.getListSong(), position);
+                        mSongAdapter.setListSong(mSongDetailAdapter.getListSong());
+                    }
+
+                    @Override
+                    public void onItemLongClick(View view, int position) {
+
+                    }
+                }
+        ));
+
+        rvListSorting.setLayoutManager(new LinearLayoutManager(
+                this,
+                LinearLayoutManager.VERTICAL,
+                false
+        ));
+        rvListSorting.addItemDecoration(new DividerItemDecoration(
+                this,
+                DividerItemDecoration.VERTICAL
+        ));
+        rvListSorting.setAdapter(mSongSortingAdapter);
 
         ft = getSupportFragmentManager().beginTransaction();
         ft.replace(R.id.flContainer, songFragment);
@@ -223,6 +282,13 @@ public class MainActivity extends AppCompatActivity
             requestPermission();
         }
 
+        ivPlayingBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                displayMain();
+            }
+        });
+
         ivNextSong.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -241,7 +307,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        btnPlayController.setOnClickListener(new View.OnClickListener() {
+        ivPlayController.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (mPlayManager != null) {
@@ -277,13 +343,52 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        btnDismiss.setOnClickListener(new View.OnClickListener() {
+        ivDetailBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                clMainContent.setVisibility(View.VISIBLE);
-                clListSongDetail.setVisibility(View.GONE);
+                displayMain();
             }
         });
+
+        ivSortingBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                displayMain();
+                mSlidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
+            }
+        });
+
+        ItemTouchHelper.Callback callback = new ItemTouchHelper.Callback() {
+            @Override
+            public int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+                return makeFlag(ItemTouchHelper.ACTION_STATE_DRAG,
+                        ItemTouchHelper.DOWN | ItemTouchHelper.UP | ItemTouchHelper.START | ItemTouchHelper.END);
+            }
+
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                Song songBefore = mSongAdapter.getListSong().get(mSongAdapter.getIndexCurrentSong());
+//                Log.i(TAG, "index song before moving: " + mSongAdapter.getIndexCurrentSong());
+                Collections.swap(mSongSortingAdapter.getListSong(), viewHolder.getAdapterPosition(), target.getAdapterPosition());
+                mSongSortingAdapter.notifyItemMoved(viewHolder.getAdapterPosition(), target.getAdapterPosition());
+                mSongAdapter.notifyItemMoved(viewHolder.getAdapterPosition(), target.getAdapterPosition());
+                for (int i = 0; i < mSongAdapter.getListSong().size(); i++) {
+                    if (songBefore.equals(mSongAdapter.getListSong().get(i))) {
+                        mPlayManager.setIndexCurrentSong(i);
+//                        Log.i(TAG, "index song after moving: " + i);
+                    }
+                }
+                return true;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+
+            }
+        };
+
+        ItemTouchHelper ith = new ItemTouchHelper(callback);
+        ith.attachToRecyclerView(rvListSorting);
     }
 
 
@@ -298,7 +403,7 @@ public class MainActivity extends AppCompatActivity
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
-        // as you specify play_music_screen parent activity in AndroidManifest.xml.
+        // as you specify component_play_music_screen parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
@@ -346,9 +451,9 @@ public class MainActivity extends AppCompatActivity
     public void everythingFind() {
         try {
             SongHelper songHelper = new SongHelper(this);
-            mSongManager.setListAlbum(songHelper.getListAlbum());
-            mSongManager.setListArtist(songHelper.getListArtist());
             mSongManager.setListSong(songHelper.getListSong());
+            mSongManager.setListAlbum(songHelper.getListAlbum(mSongManager.getListSong()));
+            mSongManager.setListArtist(songHelper.getListArtist(mSongManager.getListSong()));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -405,18 +510,19 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void updateSong(Song song) {
+    public void updateSong(Song song, int index) {
         tvSongPlaying.setText(song.getName().trim());
         tvArtistPlaying.setText(song.getArtist().trim());
+        mSongAdapter.setIndexCurrentSong(index);
     }
 
     @Override
     public void updatePlayingState(boolean isPlaying) {
         if (isPlaying) {
-            btnPlayController.setBackground(getResources().getDrawable(R.drawable.ic_pause_accent));
+            ivPlayController.setBackground(getResources().getDrawable(R.drawable.ic_pause));
             fabPlayController.setImageDrawable(getResources().getDrawable(R.drawable.ic_pause_primary));
         } else {
-            btnPlayController.setBackground(getResources().getDrawable(R.drawable.ic_play_accent));
+            ivPlayController.setBackground(getResources().getDrawable(R.drawable.ic_play));
             fabPlayController.setImageDrawable(getResources().getDrawable(R.drawable.ic_play_primary));
         }
     }
@@ -477,14 +583,46 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void displayArtistDetail(Artist artist) {
-        clMainContent.setVisibility(View.GONE);
-        clListSongDetail.setVisibility(View.VISIBLE);
+        displayListSongDetail();
+        mSongDetailAdapter.setListSong(artist.getListSong());
+        if (artist.getBitmapCover() != null) {
+            ivCoverDetail.setImageBitmap(artist.getBitmapCover());
+        } else {
+            ivCoverDetail.setImageResource(R.drawable.ic_album_accent);
+        }
     }
 
     @Override
     public void displayAlbumDetail(Album album) {
+        displayListSongDetail();
+        mSongDetailAdapter.setListSong(album.getListSong());
+        if (album.getBitmapCover() != null) {
+            ivCoverDetail.setImageBitmap(album.getBitmapCover());
+        } else {
+            ivCoverDetail.setImageResource(R.drawable.ic_album_accent);
+        }
+    }
+
+    public void displayMain() {
+        clMainContent.setVisibility(View.VISIBLE);
+        clListSongDetail.setVisibility(View.GONE);
+        clSortPlayingList.setVisibility(View.GONE);
+        mSlidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+    }
+
+    public void displayListSongDetail() {
         clMainContent.setVisibility(View.GONE);
         clListSongDetail.setVisibility(View.VISIBLE);
+        clSortPlayingList.setVisibility(View.GONE);
+        mSlidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+    }
+
+    public void displaySortingList() {
+        clMainContent.setVisibility(View.GONE);
+        clListSongDetail.setVisibility(View.GONE);
+        clSortPlayingList.setVisibility(View.VISIBLE);
+        mSlidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+        mSongSortingAdapter.setListSong(mPlayManager.getListSong());
     }
 
     public static class NotificationHandler extends BroadcastReceiver {
@@ -519,5 +657,45 @@ public class MainActivity extends AppCompatActivity
         startMain.addCategory(Intent.CATEGORY_HOME);
         startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(startMain);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        saveToSharedPref();
+    }
+
+    public void saveToSharedPref() {
+        SharedPreferences sharedPreferences = getSharedPreferences(Finals.KEY_SHARED_FILE, MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        String jsonArr = new Gson().toJson(mPlayManager.getListSong());
+        editor.putString(Finals.KEY_LAST_LIST_SONG, jsonArr);
+        editor.putInt(Finals.KEY_LAST_INDEX, mPlayManager.getIndexCurrentSong());
+        editor.commit();
+    }
+
+    public ArrayList<Song> getLastListSong() {
+        SharedPreferences sharedPreferences = getSharedPreferences(Finals.KEY_SHARED_FILE, MODE_PRIVATE);
+        String jsonArr = sharedPreferences.getString(Finals.KEY_LAST_LIST_SONG, null);
+        if (jsonArr == null) {
+            return null;
+        }
+        ArrayList<Song> listSong = new ArrayList<>();
+        Gson gson = new Gson();
+        try {
+            JSONArray jsonArray = new JSONArray(jsonArr);
+            for (int i = 0; i < jsonArray.length(); i++) {
+                Song s = gson.fromJson(jsonArray.getString(i), Song.class);
+                listSong.add(s);
+            }
+            return listSong;
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    public int getLastSongIndex() {
+        SharedPreferences sharedPreferences = getSharedPreferences(Finals.KEY_SHARED_FILE, MODE_PRIVATE);
+        return sharedPreferences.getInt(Finals.KEY_LAST_INDEX, -1);
     }
 }

@@ -6,6 +6,8 @@ import android.widget.ImageView;
 
 import java.util.ArrayList;
 
+import vn.edu.hust.set.tung.musicplayer.model.obj.Album;
+import vn.edu.hust.set.tung.musicplayer.model.obj.Artist;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Song;
 
 /**
@@ -16,6 +18,8 @@ public class LoadBitMapAsync extends AsyncTask<String, Void, String> {
     ArrayList<Song> listSong;
     ImageView imageView;
     Bitmap bitmap;
+    Album album;
+    Artist artist;
 
     public LoadBitMapAsync(ArrayList<Song> listSong, ImageView imageView) {
         this.listSong = listSong;
@@ -39,6 +43,19 @@ public class LoadBitMapAsync extends AsyncTask<String, Void, String> {
     protected void onPostExecute(String s) {
         if (bitmap != null) {
             imageView.setImageBitmap(bitmap);
+            if (album != null) {
+                album.setBitmapCover(bitmap);
+            } else if (artist != null) {
+                artist.setBitmapCover(bitmap);
+            }
         }
+    }
+
+    public void setAlbum(Album album) {
+        this.album = album;
+    }
+
+    public void setArtist(Artist artist) {
+        this.artist = artist;
     }
 }

@@ -1,9 +1,11 @@
 package vn.edu.hust.set.tung.musicplayer.custom;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -12,6 +14,8 @@ import java.util.zip.Inflater;
 import vn.edu.hust.set.tung.musicplayer.R;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Song;
 
+import static vn.edu.hust.set.tung.musicplayer.activity.MainActivity.TAG;
+
 /**
  * Created by tungt on 11/24/17.
  */
@@ -19,6 +23,8 @@ import vn.edu.hust.set.tung.musicplayer.model.obj.Song;
 public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder> {
 
     private ArrayList<Song> listSong;
+    private boolean isSorting = false;
+    private int indexCurrentSong = -1;
 
     public SongAdapter(ArrayList<Song> listSong) {
         this.listSong = listSong;
@@ -43,6 +49,23 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
     public void onBindViewHolder(SongViewHolder holder, int position) {
         holder.tvArtist.setText(listSong.get(position).getArtist());
         holder.tvSong.setText(listSong.get(position).getName());
+        if (isSorting) {
+            holder.ivSortingIndicator.setVisibility(View.VISIBLE);
+        }
+        if (holder.getAdapterPosition() == indexCurrentSong) {
+            holder.tvSong.setTextColor(holder.tvSong.getResources().getColor(R.color.colorAccent));
+        } else {
+            holder.tvSong.setTextColor(holder.tvSong.getResources().getColor(R.color.colorPrimaryDark));
+        }
+    }
+
+    public int getIndexCurrentSong() {
+        return indexCurrentSong;
+    }
+
+    public void setIndexCurrentSong(int indexCurrentSong) {
+        this.indexCurrentSong = indexCurrentSong;
+        notifyDataSetChanged();
     }
 
     @Override
@@ -54,11 +77,21 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
 
         TextView tvSong;
         TextView tvArtist;
+        ImageView ivSortingIndicator;
 
         public SongViewHolder(View itemView) {
             super(itemView);
             tvSong = itemView.findViewById(R.id.tvSong);
             tvArtist = itemView.findViewById(R.id.tvArtist);
+            ivSortingIndicator = itemView.findViewById(R.id.ivSortIndicator);
         }
+    }
+
+    public boolean isSorting() {
+        return isSorting;
+    }
+
+    public void setSorting(boolean sorting) {
+        isSorting = sorting;
     }
 }

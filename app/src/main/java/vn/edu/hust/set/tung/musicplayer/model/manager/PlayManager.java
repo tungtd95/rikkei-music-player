@@ -170,7 +170,7 @@ public class PlayManager extends Service implements State, PlayManagerObservable
     @Override
     public void notifySongChanged() {
         for (PlayManagerObserver observer : listPlayManagerObserver) {
-            observer.updateSong(listSong.get(indexCurrentSong));
+            observer.updateSong(listSong.get(indexCurrentSong), indexCurrentSong);
         }
     }
 
@@ -284,5 +284,14 @@ public class PlayManager extends Service implements State, PlayManagerObservable
                 }
             }
         }
+    }
+
+    public int getIndexCurrentSong() {
+        return indexCurrentSong;
+    }
+
+    public void setIndexCurrentSong(int indexCurrentSong) {
+        this.indexCurrentSong = indexCurrentSong;
+        notifySongChanged();
     }
 }

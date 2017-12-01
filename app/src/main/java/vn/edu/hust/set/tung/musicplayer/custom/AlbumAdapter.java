@@ -1,6 +1,8 @@
 package vn.edu.hust.set.tung.musicplayer.custom;
 
+import android.os.AsyncTask;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +14,8 @@ import java.util.ArrayList;
 import vn.edu.hust.set.tung.musicplayer.R;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Album;
 import vn.edu.hust.set.tung.musicplayer.util.LoadBitMapAsync;
+
+import static vn.edu.hust.set.tung.musicplayer.activity.MainActivity.TAG;
 
 /**
  * Created by tungt on 11/24/17.
@@ -36,7 +40,13 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.AlbumHolder>
         Album album = listAlbum.get(position);
         holder.tvAlbumName.setText(album.getName());
         holder.tvAlbumArtist.setText(album.getListSong().get(0).getArtist());
-        new LoadBitMapAsync(album.getListSong(), holder.ivAlbumCover).execute("");
+        if (album.getBitmapCover() != null) {
+            holder.ivAlbumCover.setImageBitmap(album.getBitmapCover());
+            return;
+        }
+        LoadBitMapAsync loadBitMapAsync = new LoadBitMapAsync(album.getListSong(), holder.ivAlbumCover);
+        loadBitMapAsync.setAlbum(album);
+        loadBitMapAsync.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     @Override

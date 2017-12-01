@@ -78,14 +78,15 @@ public class NManager implements PlayManagerObserver {
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setPriority(Notification.PRIORITY_MAX)
                 .setUsesChronometer(true)
-                .setOngoing(true);
+                .setOngoing(true)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
         mNotificationManager.notify(KEY_NOTIFICATION_ID, mNotificationBuilder.build());
     }
 
     Song mSong;
 
     @Override
-    public void updateSong(Song song) {
+    public void updateSong(Song song, int index) {
         mSong = song;
         displayNotification(true);
     }
