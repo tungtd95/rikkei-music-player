@@ -9,4 +9,5 @@
     <color name="colorWhiteTrans">#99FFFFFF</color>
 
     <color name="backGroundGray">#cac7c7</color>
+    <color name="colorBlack">#000</color>
 </resources>

@@ -32,10 +32,12 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
+import com.triggertrap.seekarc.SeekArc;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -105,7 +107,11 @@ public class MainActivity extends AppCompatActivity
     private CoordinatorLayout clSortPlayingList;
     private ImageView ivPlayingBack;
     private MenuItem miChangeView;
-    TabLayout tabLayout;
+    private TabLayout tabLayout;
+    private ImageView ivReorder;
+    private LinearLayout llMusicPlaying;
+    private SeekArc seekBarPlaying;
+    private ProgressBar pbPlaying;
 
     private SongFragment songFragment;
     private ArtistFragment artistFragment;
@@ -169,6 +175,10 @@ public class MainActivity extends AppCompatActivity
         rvListSorting = findViewById(R.id.rvListSorting);
         clSortPlayingList = findViewById(R.id.clSortPlayingList);
         ivPlayingBack = findViewById(R.id.ivPlayingBack);
+        ivReorder = findViewById(R.id.ivReorder);
+        llMusicPlaying = findViewById(R.id.llMusicPlaying);
+        seekBarPlaying = findViewById(R.id.seekBarPlaying);
+        pbPlaying = findViewById(R.id.pbPlaying);
 
         mSongManager = new SongManager();
         songFragment = new SongFragment();
@@ -187,6 +197,13 @@ public class MainActivity extends AppCompatActivity
         mSongAdapter = new SongAdapter(new ArrayList<Song>());
         mSongSortingAdapter = new SongAdapter(new ArrayList<Song>());
         mSongSortingAdapter.setSorting(true);
+
+        llMusicPlaying.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
 
         rvRecentListSong.setLayoutManager(new LinearLayoutManager(
                 this,
@@ -209,9 +226,15 @@ public class MainActivity extends AppCompatActivity
 
                     @Override
                     public void onItemLongClick(View view, int position) {
-                        displaySortingList();
                     }
                 }));
+
+        ivReorder.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                displaySortingList();
+            }
+        });
 
         rvListDetail.setLayoutManager(new LinearLayoutManager(
                 this,
@@ -400,6 +423,30 @@ public class MainActivity extends AppCompatActivity
 
         ItemTouchHelper ith = new ItemTouchHelper(callback);
         ith.attachToRecyclerView(rvListSorting);
+
+        seekBarPlaying.setOnSeekArcChangeListener(new SeekArc.OnSeekArcChangeListener() {
+            @Override
+            public void onProgressChanged(SeekArc seekArc, int i, boolean b) {
+                Log.i(TAG, "seek bar clicked: " + i);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekArc seekArc) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekArc seekArc) {
+
+            }
+        });
+
+        pbPlaying.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                seekBarPlaying.setVisibility(View.VISIBLE);
+            }
+        });
     }
 
 
@@ -596,6 +643,8 @@ public class MainActivity extends AppCompatActivity
             public void run() {
                 pbController.setMax(duration);
                 pbController.setProgress(progress);
+                pbPlaying.setMax(duration);
+                pbPlaying.setProgress(progress);
             }
         });
     }
