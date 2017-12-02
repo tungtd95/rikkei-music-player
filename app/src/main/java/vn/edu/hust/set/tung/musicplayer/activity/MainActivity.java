@@ -124,6 +124,7 @@ public class MainActivity extends AppCompatActivity
     private static PlayManager mPlayManager;
     private NManager mNManager;
     private SongAdapter mSongSortingAdapter;
+    SharedPreferences preferences;
 
     ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
@@ -133,6 +134,21 @@ public class MainActivity extends AppCompatActivity
             mPlayManager.register(MainActivity.this);
             mNManager = new NManager(MainActivity.this);
             mPlayManager.register(mNManager);
+            ArrayList<Song> listSong = getLastListSong();
+            int indexLast = getLastSongIndex();
+            if (listSong != null && listSong.size() > 0) {
+                preferences = getSharedPreferences(Finals.KEY_SHARED_FILE, MODE_PRIVATE);
+                mPlayManager.setUpLastState(listSong, indexLast, preferences.getInt(Finals.KEY_PLAY_MANAGER_PROGRESS, 0));
+            }
+            int lastPlayManagerState = getLastPlayManagerState();
+            if (lastPlayManagerState == Finals.PLAY_MANAGER_REPEAT) {
+                mPlayManager.handleRepeatOne();
+            } else if (lastPlayManagerState == Finals.PLAY_MANAGER_SHUFFLE) {
+                mPlayManager.handleShuffle();
+            } else if (lastPlayManagerState == Finals.PLAY_MANAGER_SHUFFLE_REPEAT) {
+                mPlayManager.handleRepeatOne();
+                mPlayManager.handleShuffle();
+            }
         }
 
         @Override
@@ -193,11 +209,21 @@ public class MainActivity extends AppCompatActivity
         albumFragment.setDisplayAlbumDetailListener(this);
         artistFragment.setFragmentViewChangedListener(this);
         albumFragment.setFragmentViewChangedListener(this);
+        preferences = getSharedPreferences(Finals.KEY_SHARED_FILE, MODE_PRIVATE);
+        albumFragment.setGrid(preferences.getBoolean(Finals.KEY_FRAGMENT_ALBUM_STATUS, true));
+        artistFragment.setGrid(preferences.getBoolean(Finals.KEY_FRAGMENT_ARTIST_STATUS, true));
 
         mSongDetailAdapter = new SongAdapter(new ArrayList<Song>());
         mSongAdapter = new SongAdapter(new ArrayList<Song>());
         mSongSortingAdapter = new SongAdapter(new ArrayList<Song>());
         mSongSortingAdapter.setSorting(true);
+
+        ArrayList<Song> listSong = getLastListSong();
+        int indexLast = getLastSongIndex();
+        if (listSong != null && listSong.size() > 0) {
+            mSongAdapter.setListSong(listSong);
+            updateSong(listSong.get(indexLast), indexLast);
+        }
 
         llMusicPlaying.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -651,6 +677,7 @@ public class MainActivity extends AppCompatActivity
                 pbController.setProgress(progress);
                 pbPlaying.setMax(duration);
                 pbPlaying.setProgress(progress);
+                saveProgress(progress);
             }
         });
     }
@@ -701,6 +728,9 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void changedViewFragment(Fragment fragment) {
+        if (tabLayout.getSelectedTabPosition() == 0) {
+            return;
+        }
         if (fragment instanceof AlbumFragment) {
             ft = getSupportFragmentManager().beginTransaction();
             ft.detach(albumFragment);
@@ -790,9 +820,14 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onSaveInstanceState(Bundle outState) {
+        Log.i(TAG, "on save instance state");
         saveToSharedPref();
+        super.onSaveInstanceState(outState);
+    }
+
+    public void saveProgress(int progress) {
+        preferences.edit().putInt(Finals.KEY_PLAY_MANAGER_PROGRESS, progress).commit();
     }
 
     public void saveToSharedPref() {
@@ -801,7 +836,23 @@ public class MainActivity extends AppCompatActivity
         String jsonArr = new Gson().toJson(mPlayManager.getListSong());
         editor.putString(Finals.KEY_LAST_LIST_SONG, jsonArr);
         editor.putInt(Finals.KEY_LAST_INDEX, mPlayManager.getIndexCurrentSong());
+        editor.putBoolean(Finals.KEY_FRAGMENT_ALBUM_STATUS, albumFragment.isGrid());
+        editor.putBoolean(Finals.KEY_FRAGMENT_ARTIST_STATUS, artistFragment.isGrid());
+        int playState = 0;
+        if (mPlayManager.getState() instanceof ShufferingState) {
+            playState = Finals.PLAY_MANAGER_SHUFFLE;
+        } else if (mPlayManager.getState() instanceof RepeatingState) {
+            playState = Finals.PLAY_MANAGER_REPEAT;
+        } else if (mPlayManager.getState() instanceof ShuffleRepeat) {
+            playState = Finals.PLAY_MANAGER_SHUFFLE_REPEAT;
+        }
+        editor.putInt(Finals.KEY_PLAY_MANAGER_STATE, playState);
         editor.commit();
+    }
+
+    public int getLastPlayManagerState() {
+        SharedPreferences preferences = getSharedPreferences(Finals.KEY_SHARED_FILE, MODE_PRIVATE);
+        return preferences.getInt(Finals.KEY_PLAY_MANAGER_STATE, 0);
     }
 
     public ArrayList<Song> getLastListSong() {
@@ -826,6 +877,6 @@ public class MainActivity extends AppCompatActivity
 
     public int getLastSongIndex() {
         SharedPreferences sharedPreferences = getSharedPreferences(Finals.KEY_SHARED_FILE, MODE_PRIVATE);
-        return sharedPreferences.getInt(Finals.KEY_LAST_INDEX, -1);
+        return sharedPreferences.getInt(Finals.KEY_LAST_INDEX, 0);
     }
 }

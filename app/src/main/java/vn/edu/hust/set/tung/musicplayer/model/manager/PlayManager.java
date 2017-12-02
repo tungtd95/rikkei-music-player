@@ -71,6 +71,20 @@ public class PlayManager extends Service implements State, PlayManagerObservable
         return mMediaPlayer.isPlaying();
     }
 
+    public void setUpLastState(ArrayList<Song> listSong, int indexLast, int progressLast) {
+        this.listSong = listSong;
+        this.indexCurrentSong = indexLast;
+        try {
+            mMediaPlayer.setDataSource(listSong.get(indexCurrentSong).getUri());
+            mMediaPlayer.prepare();
+            mMediaPlayer.seekTo(progressLast);
+            notifyPlayingProgressChanged(progressLast/1000);
+            notifyPlayingForProgressBar(progressLast, mMediaPlayer.getDuration());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void handleShuffle() {
         state.shuffer();
         notifyPlayManagerStateChanged();
@@ -87,7 +101,8 @@ public class PlayManager extends Service implements State, PlayManagerObservable
         } else if (!mMediaPlayer.isPlaying()) {
             try {
                 mMediaPlayer.start();
-            }catch (Exception e){}
+            } catch (Exception e) {
+            }
         }
         notifyPlayingStateChanged();
     }

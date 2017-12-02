@@ -1,5 +1,7 @@
 package vn.edu.hust.set.tung.musicplayer.fragment;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -24,6 +26,7 @@ import vn.edu.hust.set.tung.musicplayer.model.obj.Song;
 import vn.edu.hust.set.tung.musicplayer.model.observerpattern.SongManagerObserver;
 import vn.edu.hust.set.tung.musicplayer.model.stratergypattern.DisplayAlbumDetailListener;
 import vn.edu.hust.set.tung.musicplayer.model.stratergypattern.FragmentViewChangedListener;
+import vn.edu.hust.set.tung.musicplayer.util.Finals;
 
 import static vn.edu.hust.set.tung.musicplayer.activity.MainActivity.TAG;
 
