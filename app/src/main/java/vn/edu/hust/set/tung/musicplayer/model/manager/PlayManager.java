@@ -67,6 +67,10 @@ public class PlayManager extends Service implements State, PlayManagerObservable
 
     }
 
+    public boolean isPlaying() {
+        return mMediaPlayer.isPlaying();
+    }
+
     public void handleShuffle() {
         state.shuffer();
         notifyPlayManagerStateChanged();
@@ -86,6 +90,24 @@ public class PlayManager extends Service implements State, PlayManagerObservable
             }catch (Exception e){}
         }
         notifyPlayingStateChanged();
+    }
+
+    public void handlePause() {
+        if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
+            mMediaPlayer.pause();
+            notifyPlayingStateChanged();
+        }
+    }
+
+    public void handlePlay() {
+        if (mMediaPlayer != null) {
+            try {
+                mMediaPlayer.start();
+                notifyPlayingStateChanged();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void handleNextSong() {

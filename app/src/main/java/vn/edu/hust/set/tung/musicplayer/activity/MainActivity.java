@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -78,7 +79,7 @@ public class MainActivity extends AppCompatActivity
         implements SlidingUpPanelLayout.PanelSlideListener,
         ListSongChangedListener, PlayManagerObserver,
         DisplayAlbumDetailListener, DisplayArtistDetailListener,
-        FragmentViewChangedListener{
+        FragmentViewChangedListener {
 
     private static final int KEY_REQUEST_PERMISSION = 22;
     public static final String TAG = "main";
@@ -447,6 +448,10 @@ public class MainActivity extends AppCompatActivity
                 seekBarPlaying.setVisibility(View.VISIBLE);
             }
         });
+
+        IntentFilter intentFilter = new IntentFilter(Intent.ACTION_HEADSET_PLUG);
+        NotificationHandler handler = new NotificationHandler();
+        registerReceiver(handler, intentFilter);
     }
 
 
@@ -487,7 +492,8 @@ public class MainActivity extends AppCompatActivity
      */
     public boolean permissionOK() {
         return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                == PackageManager.PERMISSION_GRANTED;
+                == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED;
     }
 
     /**
@@ -496,7 +502,7 @@ public class MainActivity extends AppCompatActivity
     public void requestPermission() {
         ActivityCompat.requestPermissions(
                 MainActivity.this,
-                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.READ_PHONE_STATE},
                 KEY_REQUEST_PERMISSION);
     }
 
@@ -728,9 +734,32 @@ public class MainActivity extends AppCompatActivity
 
     public static class NotificationHandler extends BroadcastReceiver {
 
+        private static boolean lastStateByPhone = false;
+        private static boolean lastStateByHeadset = false;
+
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
+            if (action.equals("android.intent.action.PHONE_STATE")) {
+                String state = intent.getStringExtra("state");
+                if (mPlayManager != null) {
+                    if (state.equals("RINGING") || state.equals("OFFHOOK")) {
+                        lastStateByPhone = mPlayManager.isPlaying();
+                        mPlayManager.handlePause();
+                    } else if (state.equals("IDLE") && lastStateByPhone == true) {
+                        mPlayManager.handlePlay();
+                    }
+                }
+            }
+            if (action.equals(Intent.ACTION_HEADSET_PLUG)) {
+                int status = intent.getIntExtra("state", -1);
+                if (status == 0 && mPlayManager != null) {
+                    lastStateByHeadset = mPlayManager.isPlaying();
+                    mPlayManager.handlePause();
+                } else if (status == 1 && mPlayManager != null && lastStateByHeadset) {
+                    mPlayManager.handlePlay();
+                }
+            }
             if (action.equals(ACTION_PLAY)) {
                 if (mPlayManager != null) {
                     mPlayManager.handlePlayingState();

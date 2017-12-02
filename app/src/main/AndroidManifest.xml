@@ -4,6 +4,7 @@
     package="vn.edu.hust.set.tung.musicplayer">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"></uses-permission>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"></uses-permission>
 
     <application
         tools:replace="android:icon"
@@ -29,13 +30,12 @@
             android:enabled="true"
             android:exported="true"></service>
         <receiver
-            android:name=".activity.MainActivity$NotificationHandler"
-            android:enabled="true"
-            android:exported="false">
+            android:name=".activity.MainActivity$NotificationHandler">
             <intent-filter>
                 <action android:name="play"></action>
                 <action android:name="next"></action>
                 <action android:name="previous"></action>
+                <action android:name="android.intent.action.PHONE_STATE"></action>
             </intent-filter>
         </receiver>
     </application>

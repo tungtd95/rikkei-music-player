@@ -75,11 +75,15 @@ public class NManager implements PlayManagerObserver {
                 .setCustomBigContentView(remoteViewsExpanded)
                 .setCustomContentView(remoteViewsNormal)
                 .setAutoCancel(false)
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setPriority(Notification.PRIORITY_MAX)
-                .setUsesChronometer(true)
-                .setOngoing(true)
-                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+                .setSmallIcon(R.mipmap.ic_launcher);
+
+        if (isPlaying) {
+            mNotificationBuilder
+                    .setPriority(Notification.PRIORITY_MAX)
+                    .setUsesChronometer(true)
+                    .setOngoing(true)
+                    .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+        }
         mNotificationManager.notify(KEY_NOTIFICATION_ID, mNotificationBuilder.build());
     }
 
