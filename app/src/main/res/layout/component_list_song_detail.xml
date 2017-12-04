@@ -6,13 +6,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="vn.edu.hust.set.tung.musicplayer.activity.MainActivity"
-    android:visibility="gone">
+    android:visibility="gone"
+    tools:context="vn.edu.hust.set.tung.musicplayer.activity.MainActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="@dimen/appbar_padding_top"
         android:theme="@style/AppTheme.AppBarOverlay">
 
         <android.support.v7.widget.Toolbar
@@ -23,38 +22,87 @@
             app:layout_scrollFlags="scroll|enterAlways"
             app:popupTheme="@style/AppTheme.PopupOverlay">
 
-            <ImageView
-                android:id="@+id/ivDetailBack"
-                android:layout_width="@dimen/notification_button"
-                android:layout_height="@dimen/notification_button"
-                android:background="@drawable/ic_arrow_back" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:weightSum="1">
+
+                <ImageView
+                    android:id="@+id/ivDetailBack"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/ic_arrow_back" />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:paddingRight="@dimen/small_padding">
+
+                    <TextView
+                        android:id="@+id/tvDetailDescription"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:ellipsize="end"
+                        android:gravity="center_vertical"
+                        android:paddingLeft="@dimen/padding_large"
+                        android:layout_marginRight="@dimen/padding_huge"
+                        android:singleLine="true"
+                        android:textColor="@color/colorWhite"
+                        android:textSize="@dimen/text_title"
+                        android:textStyle="bold" />
+
+                    <android.support.v7.widget.SearchView
+                        android:id="@+id/svSearchDetailList"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical|end"
+                        app:queryBackground="@color/colorPrimary">
+
+                    </android.support.v7.widget.SearchView>
+                </FrameLayout>
+            </LinearLayout>
         </android.support.v7.widget.Toolbar>
     </android.support.design.widget.AppBarLayout>
 
-    <LinearLayout
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:weightSum="1"
-        android:gravity="center"
-        android:background="@color/backGroundGray"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <ImageView
-            android:id="@+id/ivCoverDetail"
-            android:layout_width="@dimen/image_detail_size"
-            android:layout_height="@dimen/image_detail_size"
-            android:src="@drawable/ic_album_accent"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/backGroundGray"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:weightSum="1"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+            <ImageView
+                android:id="@+id/ivCoverDetail"
+                android:layout_width="@dimen/image_detail_size"
+                android:layout_height="@dimen/image_detail_size"
+                android:src="@drawable/ic_album_accent" />
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/rvListDetail"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:background="@color/colorWhiteTrans">
+
+            </android.support.v7.widget.RecyclerView>
+        </LinearLayout>
 
         <android.support.v7.widget.RecyclerView
-            android:id="@+id/rvListDetail"
+            android:id="@+id/rvSearchDetailList"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:background="@color/colorWhiteTrans"
-            android:layout_weight="1">
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimary">
 
         </android.support.v7.widget.RecyclerView>
-    </LinearLayout>
 
+    </FrameLayout>
 
 </android.support.design.widget.CoordinatorLayout>

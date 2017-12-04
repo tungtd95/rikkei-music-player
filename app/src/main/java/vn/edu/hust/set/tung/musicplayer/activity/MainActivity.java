@@ -120,6 +120,10 @@ public class MainActivity extends AppCompatActivity
     private SearchView mSearchMain;
     private SearchView svSearchPlayingList;
     private RecyclerView rvSearchPlayingListMusic;
+    private TextView tvDetailDescription;
+    private RecyclerView rvSearchDetailList;
+    private SearchView svSearchDetailList;
+    private TextView tvSongNamePlaying;
 
     private SongFragment songFragment;
     private ArtistFragment artistFragment;
@@ -133,6 +137,7 @@ public class MainActivity extends AppCompatActivity
     private SongAdapter mSongSortingAdapter;
     private ObjectAdapter mObjectAdapterSearching;
     private SongAdapter mSongSearchPlayListAdapter;
+    private SongAdapter mSongSearchDetailList;
     SharedPreferences preferences;
 
     ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -208,8 +213,13 @@ public class MainActivity extends AppCompatActivity
         pbPlaying = findViewById(R.id.pbPlaying);
         rvListSearching = findViewById(R.id.rvListSearching);
         svSearchPlayingList = findViewById(R.id.svSearchPlayingList);
-        ((EditText) svSearchPlayingList.findViewById(android.support.v7.appcompat.R.id.search_src_text)).setTextColor(getResources().getColor(R.color.colorWhite));
+        ((EditText) svSearchPlayingList.findViewById(android.support.v7.appcompat.R.id.search_src_text))
+                .setTextColor(getResources().getColor(R.color.colorWhite));
         rvSearchPlayingListMusic = findViewById(R.id.rvSearchPlayingListMusic);
+        tvDetailDescription = findViewById(R.id.tvDetailDescription);
+        rvSearchDetailList = findViewById(R.id.rvSearchDetailList);
+        svSearchDetailList = findViewById(R.id.svSearchDetailList);
+        tvSongNamePlaying = findViewById(R.id.tvSongNamePlaying);
 
         mSongManager = new SongManager();
         songFragment = new SongFragment();
@@ -233,6 +243,52 @@ public class MainActivity extends AppCompatActivity
         mSongSortingAdapter.setSorting(true);
         mObjectAdapterSearching = new ObjectAdapter(new ArrayList<Object>());
         mSongSearchPlayListAdapter = new SongAdapter(new ArrayList<Song>());
+        mSongSearchDetailList = new SongAdapter(new ArrayList<Song>());
+
+        rvSearchDetailList.setLayoutManager(new LinearLayoutManager(
+                this,
+                LinearLayoutManager.VERTICAL,
+                false
+        ));
+        rvSearchDetailList.setAdapter(mSongSearchDetailList);
+        rvSearchDetailList.addOnItemTouchListener(new RecyclerItemClickListener(
+                this,
+                rvSearchDetailList,
+                new RecyclerItemClickListener.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(View view, int position) {
+                        Song s = mSongSearchDetailList.getListSong().get(position);
+                        for (int i = 0; i < mSongDetailAdapter.getListSong().size(); i++) {
+                            if (s.equals(mSongDetailAdapter.getListSong().get(i))) {
+                                updateListSong(mSongDetailAdapter.getListSong(), i);
+                                svSearchDetailList.setIconified(true);
+                                svSearchDetailList.onActionViewCollapsed();
+                                return;
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onItemLongClick(View view, int position) {
+
+                    }
+                }));
+        svSearchDetailList.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if (newText.isEmpty()) {
+                    mSongSearchDetailList.setListSong(new ArrayList<Song>());
+                    return false;
+                }
+                mSongSearchDetailList.setListSong(SongHelper.searchSong(mSongDetailAdapter.getListSong(), newText));
+                return false;
+            }
+        });
 
         rvSearchPlayingListMusic.setLayoutManager(new LinearLayoutManager(
                 this,
@@ -274,8 +330,7 @@ public class MainActivity extends AppCompatActivity
                     mSongSearchPlayListAdapter.setListSong(new ArrayList<Song>());
                     return false;
                 }
-                ArrayList<Song> listSong = SongHelper.searchSong(mSongAdapter.getListSong(), newText);
-                mSongSearchPlayListAdapter.setListSong(listSong);
+                mSongSearchPlayListAdapter.setListSong(SongHelper.searchSong(mSongAdapter.getListSong(), newText));
                 return false;
             }
         });
@@ -729,6 +784,7 @@ public class MainActivity extends AppCompatActivity
     public void updateSong(Song song, int index) {
         tvSongPlaying.setText(song.getName().trim());
         tvArtistPlaying.setText(song.getArtist().trim());
+        tvSongNamePlaying.setText(song.getName());
         mSongAdapter.setIndexCurrentSong(index);
     }
 
@@ -802,7 +858,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void displayArtistDetail(Artist artist) {
-        displayListSongDetail();
+        displayListSongDetail(artist.getName());
         mSongDetailAdapter.setListSong(artist.getListSong());
         if (artist.getBitmapCover() != null) {
             ivCoverDetail.setImageBitmap(artist.getBitmapCover());
@@ -813,7 +869,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void displayAlbumDetail(Album album) {
-        displayListSongDetail();
+        displayListSongDetail(album.getName());
         mSongDetailAdapter.setListSong(album.getListSong());
         if (album.getBitmapCover() != null) {
             ivCoverDetail.setImageBitmap(album.getBitmapCover());
@@ -829,7 +885,8 @@ public class MainActivity extends AppCompatActivity
         mSlidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
     }
 
-    public void displayListSongDetail() {
+    public void displayListSongDetail(String description) {
+        tvDetailDescription.setText(description);
         clMainContent.setVisibility(View.GONE);
         clListSongDetail.setVisibility(View.VISIBLE);
         clSortPlayingList.setVisibility(View.GONE);
