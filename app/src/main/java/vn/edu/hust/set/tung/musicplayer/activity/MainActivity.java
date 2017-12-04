@@ -9,6 +9,7 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
@@ -22,6 +23,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 
 import android.os.Bundle;
@@ -30,10 +32,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
@@ -47,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import vn.edu.hust.set.tung.musicplayer.R;
+import vn.edu.hust.set.tung.musicplayer.custom.ObjectAdapter;
 import vn.edu.hust.set.tung.musicplayer.custom.RecyclerItemClickListener;
 import vn.edu.hust.set.tung.musicplayer.custom.SongAdapter;
 import vn.edu.hust.set.tung.musicplayer.model.manager.NManager;
@@ -113,6 +116,10 @@ public class MainActivity extends AppCompatActivity
     private LinearLayout llMusicPlaying;
     private SeekArc seekBarPlaying;
     private ProgressBar pbPlaying;
+    private RecyclerView rvListSearching;
+    private SearchView mSearchMain;
+    private SearchView svSearchPlayingList;
+    private RecyclerView rvSearchPlayingListMusic;
 
     private SongFragment songFragment;
     private ArtistFragment artistFragment;
@@ -124,6 +131,8 @@ public class MainActivity extends AppCompatActivity
     private static PlayManager mPlayManager;
     private NManager mNManager;
     private SongAdapter mSongSortingAdapter;
+    private ObjectAdapter mObjectAdapterSearching;
+    private SongAdapter mSongSearchPlayListAdapter;
     SharedPreferences preferences;
 
     ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -138,6 +147,7 @@ public class MainActivity extends AppCompatActivity
             int indexLast = getLastSongIndex();
             if (listSong != null && listSong.size() > 0) {
                 preferences = getSharedPreferences(Finals.KEY_SHARED_FILE, MODE_PRIVATE);
+                mNManager.setSong(listSong.get(indexLast));
                 mPlayManager.setUpLastState(listSong, indexLast, preferences.getInt(Finals.KEY_PLAY_MANAGER_PROGRESS, 0));
             }
             int lastPlayManagerState = getLastPlayManagerState();
@@ -165,7 +175,7 @@ public class MainActivity extends AppCompatActivity
         Intent intent = new Intent(MainActivity.this, PlayManager.class);
         bindService(intent, mServiceConnection, BIND_AUTO_CREATE);
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        final Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         tabLayout = findViewById(R.id.tabs);
         mSlidingUpPanelLayout = findViewById(R.id.slidingUpPanel);
@@ -196,6 +206,10 @@ public class MainActivity extends AppCompatActivity
         llMusicPlaying = findViewById(R.id.llMusicPlaying);
         seekBarPlaying = findViewById(R.id.seekBarPlaying);
         pbPlaying = findViewById(R.id.pbPlaying);
+        rvListSearching = findViewById(R.id.rvListSearching);
+        svSearchPlayingList = findViewById(R.id.svSearchPlayingList);
+        ((EditText) svSearchPlayingList.findViewById(android.support.v7.appcompat.R.id.search_src_text)).setTextColor(getResources().getColor(R.color.colorWhite));
+        rvSearchPlayingListMusic = findViewById(R.id.rvSearchPlayingListMusic);
 
         mSongManager = new SongManager();
         songFragment = new SongFragment();
@@ -217,6 +231,88 @@ public class MainActivity extends AppCompatActivity
         mSongAdapter = new SongAdapter(new ArrayList<Song>());
         mSongSortingAdapter = new SongAdapter(new ArrayList<Song>());
         mSongSortingAdapter.setSorting(true);
+        mObjectAdapterSearching = new ObjectAdapter(new ArrayList<Object>());
+        mSongSearchPlayListAdapter = new SongAdapter(new ArrayList<Song>());
+
+        rvSearchPlayingListMusic.setLayoutManager(new LinearLayoutManager(
+                this,
+                LinearLayoutManager.VERTICAL,
+                false
+        ));
+        rvSearchPlayingListMusic.setAdapter(mSongSearchPlayListAdapter);
+        rvSearchPlayingListMusic.addOnItemTouchListener(new RecyclerItemClickListener(
+                this,
+                rvSearchPlayingListMusic,
+                new RecyclerItemClickListener.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(View view, int position) {
+                        Song s = mSongSearchPlayListAdapter.getListSong().get(position);
+                        for (int i = 0; i < mSongAdapter.getListSong().size(); i++) {
+                            if (s.equals(mSongAdapter.getListSong().get(i))) {
+                                mPlayManager.updateSong(i);
+                                svSearchPlayingList.setIconified(true);
+                                svSearchPlayingList.onActionViewCollapsed();
+                                return;
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onItemLongClick(View view, int position) {
+
+                    }
+                }));
+        svSearchPlayingList.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if (newText.isEmpty()) {
+                    mSongSearchPlayListAdapter.setListSong(new ArrayList<Song>());
+                    return false;
+                }
+                ArrayList<Song> listSong = SongHelper.searchSong(mSongAdapter.getListSong(), newText);
+                mSongSearchPlayListAdapter.setListSong(listSong);
+                return false;
+            }
+        });
+
+        rvListSearching.setLayoutManager(new LinearLayoutManager(
+                this,
+                LinearLayoutManager.VERTICAL,
+                false
+        ));
+        rvListSearching.setAdapter(mObjectAdapterSearching);
+        rvListSearching.addOnItemTouchListener(new RecyclerItemClickListener(
+                this,
+                rvListSearching,
+                new RecyclerItemClickListener.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(View view, int position) {
+                        Object object = mObjectAdapterSearching.getListObj().get(position);
+                        if (object instanceof Song) {
+                            Song song = (Song) object;
+                            ArrayList<Song> songs = new ArrayList<>();
+                            songs.add(song);
+                            updateListSong(songs, 0);
+                        } else if (object instanceof Artist) {
+                            Artist artist = (Artist) object;
+                            displayArtistDetail(artist);
+                        } else if (object instanceof Album) {
+                            Album album = (Album) object;
+                            displayAlbumDetail(album);
+                        }
+                        toolbar.collapseActionView();
+                    }
+
+                    @Override
+                    public void onItemLongClick(View view, int position) {
+
+                    }
+                }));
 
         ArrayList<Song> listSong = getLastListSong();
         int indexLast = getLastSongIndex();
@@ -480,12 +576,36 @@ public class MainActivity extends AppCompatActivity
         registerReceiver(handler, intentFilter);
     }
 
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         miChangeView = menu.findItem(R.id.action_change_view);
+        MenuItem miSearch = menu.findItem(R.id.action_search);
+        mSearchMain = (SearchView) miSearch.getActionView();
+        mSearchMain.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if (newText.isEmpty()) {
+                    mObjectAdapterSearching.setListObj(new ArrayList<Object>());
+                    return false;
+                }
+                new SearchAsync().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, newText);
+                return false;
+            }
+        });
+        mSearchMain.setOnCloseListener(new SearchView.OnCloseListener() {
+            @Override
+            public boolean onClose() {
+                mObjectAdapterSearching.setListObj(new ArrayList<Object>());
+                return false;
+            }
+        });
         return true;
     }
 
@@ -503,8 +623,6 @@ public class MainActivity extends AppCompatActivity
             } else if (tabLayout.getSelectedTabPosition() == 2) {
                 artistFragment.setGrid(!artistFragment.isGrid());
             }
-            return true;
-        } else if (id == R.id.action_search) {
             return true;
         }
 
@@ -821,7 +939,6 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        Log.i(TAG, "on save instance state");
         saveToSharedPref();
         super.onSaveInstanceState(outState);
     }
@@ -878,5 +995,25 @@ public class MainActivity extends AppCompatActivity
     public int getLastSongIndex() {
         SharedPreferences sharedPreferences = getSharedPreferences(Finals.KEY_SHARED_FILE, MODE_PRIVATE);
         return sharedPreferences.getInt(Finals.KEY_LAST_INDEX, 0);
+    }
+
+    public class SearchAsync extends AsyncTask<String, Void, String> {
+
+        ArrayList<Object> listObj;
+
+        @Override
+        protected String doInBackground(String... strings) {
+            listObj = SongHelper.searchAll(
+                    mSongManager.getListSong(),
+                    mSongManager.getListArtist(),
+                    mSongManager.getListAlbum(), strings[0]);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            if (!mSearchMain.isIconified())
+                mObjectAdapterSearching.setListObj(listObj);
+        }
     }
 }

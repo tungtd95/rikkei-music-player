@@ -18,4 +18,8 @@ public class Finals {
     public static final int PLAY_MANAGER_REPEAT = 1;
     public static final int PLAY_MANAGER_SHUFFLE = 2;
     public static final int PLAY_MANAGER_SHUFFLE_REPEAT = 3;
+
+    public static final String BY_NAME = "search song name";
+    public static final String BY_ARTIST = "search artist";
+    public static final String BY_ALBUM = "search album";
 }

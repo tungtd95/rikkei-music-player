@@ -7,8 +7,13 @@ import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.util.Patterns;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 import vn.edu.hust.set.tung.musicplayer.model.obj.Album;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Artist;
@@ -23,6 +28,7 @@ import static vn.edu.hust.set.tung.musicplayer.activity.MainActivity.TAG;
 public class SongHelper {
 
     Context context;
+
     public SongHelper(Context context) {
         this.context = context;
     }
@@ -134,5 +140,84 @@ public class SongHelper {
             bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
         }
         return bitmap;
+    }
+
+    public static ArrayList<Song> searchSong(ArrayList<Song> listSong, String keyWord) {
+        ArrayList<Song> list = new ArrayList<>();
+        keyWord = convertString(keyWord);
+        for (Song song : listSong) {
+            if (convertString(song.getName()).contains(keyWord)) {
+                list.add(song);
+                if (list.size() == 10) {
+                    return list;
+                }
+            }
+        }
+        return list;
+    }
+
+    public static ArrayList<Album> searchAlbum(ArrayList<Album> listAlbum, String keyWord) {
+        ArrayList<Album> list = new ArrayList<>();
+        keyWord = convertString(keyWord);
+        for (Album album : listAlbum) {
+            if (convertString(album.getName()).contains(keyWord)) {
+                list.add(album);
+                if (list.size() == 10) {
+                    return list;
+                }
+            }
+        }
+        return list;
+    }
+
+    public static ArrayList<Artist> searchArtist(ArrayList<Artist> listArtist, String keyWord) {
+        ArrayList<Artist> list = new ArrayList<>();
+        keyWord = convertString(keyWord);
+        for (Artist artist : listArtist) {
+            if (convertString(artist.getName()).contains(keyWord)) {
+                list.add(artist);
+                if (list.size() == 10) {
+                    return list;
+                }
+            }
+        }
+        return list;
+    }
+
+    public static ArrayList<Object> searchAll(
+            ArrayList<Song> listSong,
+            ArrayList<Artist> listArtist,
+            ArrayList<Album> listAlbum,
+            String keyWord
+    ) {
+        ArrayList<Song> songs = searchSong(listSong, keyWord);
+        ArrayList<Artist> artists = searchArtist(listArtist, keyWord);
+        ArrayList<Album> albums = searchAlbum(listAlbum, keyWord);
+        ArrayList<Object> listObj = new ArrayList<>();
+        for (Song song : songs) {
+            listObj.add(song);
+            if (listObj.size() == 10) {
+                return listObj;
+            }
+        }
+        for (Artist artist : artists) {
+            listObj.add(artist);
+            if (listObj.size() == 10) {
+                return listObj;
+            }
+        }
+        for (Album album : albums) {
+            listObj.add(album);
+            if (listObj.size() == 10) {
+                return listObj;
+            }
+        }
+        return listObj;
+    }
+
+    public static String convertString(String s) {
+        String temp = Normalizer.normalize(s, Normalizer.Form.NFD);
+        Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+        return pattern.matcher(temp).replaceAll("").replaceAll("đ", "d").toLowerCase().trim();
     }
 }

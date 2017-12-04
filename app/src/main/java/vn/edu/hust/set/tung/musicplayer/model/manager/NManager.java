@@ -115,4 +115,12 @@ public class NManager implements PlayManagerObserver {
     public void updateForProgressBar(int progress, int duration) {
 
     }
+
+    public Song getSong() {
+        return mSong;
+    }
+
+    public void setSong(Song mSong) {
+        this.mSong = mSong;
+    }
 }

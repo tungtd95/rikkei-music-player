@@ -41,4 +41,9 @@ public class Artist {
     public Bitmap getBitmapCover() {
         return bitmapCover;
     }
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }

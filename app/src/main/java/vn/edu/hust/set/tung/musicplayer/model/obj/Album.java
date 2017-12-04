@@ -41,4 +41,9 @@ public class Album {
     public void setBitmapCover(Bitmap bitmapCover) {
         this.bitmapCover = bitmapCover;
     }
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }

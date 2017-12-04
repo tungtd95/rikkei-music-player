@@ -107,4 +107,9 @@ public class Song implements Parcelable{
         parcel.writeString(album);
         parcel.writeString(duration);
     }
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }
