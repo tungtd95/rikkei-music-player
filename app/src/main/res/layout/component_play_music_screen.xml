@@ -17,7 +17,7 @@
             android:layout_height="@dimen/music_controller_height"
             android:background="@color/colorPrimary"
             android:gravity="center"
-            android:visibility="gone"
+            android:visibility="visible"
             android:weightSum="3">
 
             <ImageView
@@ -76,7 +76,7 @@
             android:layout_height="@dimen/music_controller_height"
             android:background="@color/colorPrimary"
             android:gravity="center_vertical"
-            android:visibility="visible"
+            android:visibility="gone"
             android:weightSum="3">
 
             <ImageView
@@ -180,16 +180,6 @@
                             android:alpha="0.7"
                             android:background="@drawable/ic_album_accent" />
 
-                        <ProgressBar
-                            android:id="@+id/pbPlaying"
-                            style="?android:attr/progressBarStyleHorizontal"
-                            android:layout_width="247dp"
-                            android:layout_height="247dp"
-                            android:layout_gravity="center"
-                            android:background="@drawable/circle_shape"
-                            android:indeterminate="false"
-                            android:progressDrawable="@drawable/circular_progress_bar" />
-
                         <com.triggertrap.seekarc.SeekArc
                             android:id="@+id/seekBarPlaying"
                             android:layout_width="@dimen/progress_bar_circle"
@@ -260,6 +250,7 @@
             </LinearLayout>
         </android.support.design.widget.CoordinatorLayout>
         <android.support.v7.widget.RecyclerView
+            android:visibility="visible"
             android:id="@+id/rvSearchPlayingListMusic"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

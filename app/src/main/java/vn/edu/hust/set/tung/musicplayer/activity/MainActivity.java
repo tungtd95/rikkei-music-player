@@ -9,6 +9,7 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
@@ -28,7 +29,7 @@ import android.support.v7.widget.Toolbar;
 
 import android.os.Bundle;
 import android.support.v7.widget.helper.ItemTouchHelper;
-import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -115,7 +116,6 @@ public class MainActivity extends AppCompatActivity
     private ImageView ivReorder;
     private LinearLayout llMusicPlaying;
     private SeekArc seekBarPlaying;
-    private ProgressBar pbPlaying;
     private RecyclerView rvListSearching;
     private SearchView mSearchMain;
     private SearchView svSearchPlayingList;
@@ -210,7 +210,6 @@ public class MainActivity extends AppCompatActivity
         ivReorder = findViewById(R.id.ivReorder);
         llMusicPlaying = findViewById(R.id.llMusicPlaying);
         seekBarPlaying = findViewById(R.id.seekBarPlaying);
-        pbPlaying = findViewById(R.id.pbPlaying);
         rvListSearching = findViewById(R.id.rvListSearching);
         svSearchPlayingList = findViewById(R.id.svSearchPlayingList);
         ((EditText) svSearchPlayingList.findViewById(android.support.v7.appcompat.R.id.search_src_text))
@@ -605,7 +604,9 @@ public class MainActivity extends AppCompatActivity
         seekBarPlaying.setOnSeekArcChangeListener(new SeekArc.OnSeekArcChangeListener() {
             @Override
             public void onProgressChanged(SeekArc seekArc, int i, boolean b) {
-                Log.i(TAG, "seek bar clicked: " + i);
+                if (b) {
+                    mPlayManager.handleSeek(i);
+                }
             }
 
             @Override
@@ -619,16 +620,11 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        pbPlaying.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                seekBarPlaying.setVisibility(View.VISIBLE);
-            }
-        });
-
         IntentFilter intentFilter = new IntentFilter(Intent.ACTION_HEADSET_PLUG);
-        NotificationHandler handler = new NotificationHandler();
+        BroadcastHandler handler = new BroadcastHandler();
         registerReceiver(handler, intentFilter);
+        AudioManager manager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        manager.registerMediaButtonEventReceiver(new ComponentName(this, BroadcastHandler.class));
     }
 
     @Override
@@ -849,8 +845,7 @@ public class MainActivity extends AppCompatActivity
             public void run() {
                 pbController.setMax(duration);
                 pbController.setProgress(progress);
-                pbPlaying.setMax(duration);
-                pbPlaying.setProgress(progress);
+                seekBarPlaying.setProgress(progress * 100 / duration);
                 saveProgress(progress);
             }
         });
@@ -937,7 +932,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    public static class NotificationHandler extends BroadcastReceiver {
+    public static class BroadcastHandler extends BroadcastReceiver {
 
         private static boolean lastStateByPhone = false;
         private static boolean lastStateByHeadset = false;
@@ -945,6 +940,14 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
+            if (action.equals(Intent.ACTION_MEDIA_BUTTON)) {
+                Bundle bundle = intent.getExtras();
+                KeyEvent keyEvent = (KeyEvent) bundle.get(Intent.EXTRA_KEY_EVENT);
+                if (keyEvent.getAction() == KeyEvent.ACTION_DOWN) {
+                    mPlayManager.handlePlayingState();
+                }
+                return;
+            }
             if (action.equals("android.intent.action.PHONE_STATE")) {
                 String state = intent.getStringExtra("state");
                 if (mPlayManager != null) {
@@ -955,6 +958,7 @@ public class MainActivity extends AppCompatActivity
                         mPlayManager.handlePlay();
                     }
                 }
+                return;
             }
             if (action.equals(Intent.ACTION_HEADSET_PLUG)) {
                 int status = intent.getIntExtra("state", -1);
@@ -964,6 +968,7 @@ public class MainActivity extends AppCompatActivity
                 } else if (status == 1 && mPlayManager != null && lastStateByHeadset) {
                     mPlayManager.handlePlay();
                 }
+                return;
             }
             if (action.equals(ACTION_PLAY)) {
                 if (mPlayManager != null) {

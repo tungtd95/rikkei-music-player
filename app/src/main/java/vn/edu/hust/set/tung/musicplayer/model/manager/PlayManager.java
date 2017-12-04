@@ -85,6 +85,13 @@ public class PlayManager extends Service implements State, PlayManagerObservable
         }
     }
 
+    public void handleSeek(int percent) {
+        try {
+            int seekTo = mMediaPlayer.getDuration()*percent/100;
+            mMediaPlayer.seekTo(seekTo);
+        }catch (Exception e) {}
+    }
+
     public void handleShuffle() {
         state.shuffer();
         notifyPlayManagerStateChanged();

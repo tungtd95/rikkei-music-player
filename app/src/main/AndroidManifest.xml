@@ -21,7 +21,6 @@
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -29,10 +28,10 @@
         <service
             android:name=".model.manager.PlayManager"
             android:enabled="true"
-            android:exported="true" />
+            android:exported="true"></service>
 
         <receiver
-            android:name=".activity.MainActivity$NotificationHandler"
+            android:name=".activity.MainActivity$BroadcastHandler"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
@@ -42,7 +41,14 @@
                 <action android:name="android.intent.action.PHONE_STATE" />
             </intent-filter>
         </receiver>
-
+        <receiver
+            android:name=".custom.MyBroadcast"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter android:priority="100000000">
+                <action android:name="android.intent.action.MEDIA_BUTTON"></action>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
