@@ -624,7 +624,10 @@ public class MainActivity extends AppCompatActivity
         BroadcastHandler handler = new BroadcastHandler();
         registerReceiver(handler, intentFilter);
         AudioManager manager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        manager.registerMediaButtonEventReceiver(new ComponentName(this, BroadcastHandler.class));
+        if (manager != null) {
+            manager.registerMediaButtonEventReceiver(new ComponentName(this, BroadcastHandler.class));
+//            manager.registerMediaButtonEventReceiver(new ComponentName(getPackageName(), MyBroadcast.class.getName()));
+        }
     }
 
     @Override
@@ -776,14 +779,29 @@ public class MainActivity extends AppCompatActivity
         mPlayManager.updateListSong(listSong, index);
     }
 
+    /**
+     * play manager notify about song changed
+     *
+     * @param song
+     * @param index
+     */
     @Override
     public void updateSong(Song song, int index) {
         tvSongPlaying.setText(song.getName().trim());
         tvArtistPlaying.setText(song.getArtist().trim());
         tvSongNamePlaying.setText(song.getName());
         mSongAdapter.setIndexCurrentSong(index);
+        try {
+            saveToSharedPref();
+        } catch (Exception e) {
+        }
     }
 
+    /**
+     * observable notify about playing or not playing state
+     *
+     * @param isPlaying
+     */
     @Override
     public void updatePlayingState(boolean isPlaying) {
         if (isPlaying) {
@@ -795,6 +813,11 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * observable notify about shuffle and repeat function changed
+     *
+     * @param state
+     */
     @Override
     public void updatePlayManagerState(State state) {
         if (state instanceof NormalState) {
@@ -818,6 +841,11 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * observable notify about song progress changed
+     *
+     * @param progress
+     */
     @Override
     public void updatePlayingProgress(int progress) {
         final int second = progress % 60;
@@ -838,6 +866,12 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+    /**
+     * observable notify about song progress changed
+     *
+     * @param progress
+     * @param duration
+     */
     @Override
     public void updateForProgressBar(final int progress, final int duration) {
         runOnUiThread(new Runnable() {
@@ -851,6 +885,11 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+    /**
+     * observable notify about display list song of an artist
+     *
+     * @param artist
+     */
     @Override
     public void displayArtistDetail(Artist artist) {
         displayListSongDetail(artist.getName());
@@ -862,6 +901,11 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * observable notify about display list song of an album
+     *
+     * @param album
+     */
     @Override
     public void displayAlbumDetail(Album album) {
         displayListSongDetail(album.getName());
@@ -873,6 +917,9 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * display song manager screen
+     */
     public void displayMain() {
         clMainContent.setVisibility(View.VISIBLE);
         clListSongDetail.setVisibility(View.GONE);
@@ -880,6 +927,11 @@ public class MainActivity extends AppCompatActivity
         mSlidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
     }
 
+    /**
+     * display list song and description of album or artist
+     *
+     * @param description
+     */
     public void displayListSongDetail(String description) {
         tvDetailDescription.setText(description);
         clMainContent.setVisibility(View.GONE);
@@ -888,6 +940,9 @@ public class MainActivity extends AppCompatActivity
         mSlidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
     }
 
+    /**
+     * display sorting playing list screen
+     */
     public void displaySortingList() {
         clMainContent.setVisibility(View.GONE);
         clListSongDetail.setVisibility(View.GONE);
@@ -896,6 +951,11 @@ public class MainActivity extends AppCompatActivity
         mSongSortingAdapter.setListSong(mPlayManager.getListSong());
     }
 
+    /**
+     * correspond to switch between grid view and list view of fragment
+     *
+     * @param fragment
+     */
     @Override
     public void changedViewFragment(Fragment fragment) {
         if (tabLayout.getSelectedTabPosition() == 0) {
@@ -932,6 +992,130 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * do not allow android system destroy activity when press back button
+     *
+     */
+    @Override
+    public void onBackPressed() {
+        Intent startMain = new Intent(Intent.ACTION_MAIN);
+        startMain.addCategory(Intent.CATEGORY_HOME);
+        startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(startMain);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        saveToSharedPref();
+        super.onSaveInstanceState(outState);
+    }
+
+    /**
+     * save playing progress to shared preference
+     *
+     * @param progress
+     */
+    public void saveProgress(int progress) {
+        preferences.edit().putInt(Finals.KEY_PLAY_MANAGER_PROGRESS, progress).commit();
+    }
+
+    /**
+     * save playing list song and song to shared preference
+     *
+     */
+    public void saveToSharedPref() {
+        SharedPreferences sharedPreferences = getSharedPreferences(Finals.KEY_SHARED_FILE, MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        String jsonArr = new Gson().toJson(mPlayManager.getListSong());
+        editor.putString(Finals.KEY_LAST_LIST_SONG, jsonArr);
+        editor.putInt(Finals.KEY_LAST_INDEX, mPlayManager.getIndexCurrentSong());
+        editor.putBoolean(Finals.KEY_FRAGMENT_ALBUM_STATUS, albumFragment.isGrid());
+        editor.putBoolean(Finals.KEY_FRAGMENT_ARTIST_STATUS, artistFragment.isGrid());
+        int playState = 0;
+        if (mPlayManager.getState() instanceof ShufferingState) {
+            playState = Finals.PLAY_MANAGER_SHUFFLE;
+        } else if (mPlayManager.getState() instanceof RepeatingState) {
+            playState = Finals.PLAY_MANAGER_REPEAT;
+        } else if (mPlayManager.getState() instanceof ShuffleRepeat) {
+            playState = Finals.PLAY_MANAGER_SHUFFLE_REPEAT;
+        }
+        editor.putInt(Finals.KEY_PLAY_MANAGER_STATE, playState);
+        editor.commit();
+    }
+
+    /**
+     * get last playing state
+     *
+     * @return (shuffle, repeat...)
+     */
+    public int getLastPlayManagerState() {
+        SharedPreferences preferences = getSharedPreferences(Finals.KEY_SHARED_FILE, MODE_PRIVATE);
+        return preferences.getInt(Finals.KEY_PLAY_MANAGER_STATE, 0);
+    }
+
+    /**
+     * get last playing list song
+     *
+     * @return list song
+     */
+    public ArrayList<Song> getLastListSong() {
+        SharedPreferences sharedPreferences = getSharedPreferences(Finals.KEY_SHARED_FILE, MODE_PRIVATE);
+        String jsonArr = sharedPreferences.getString(Finals.KEY_LAST_LIST_SONG, null);
+        if (jsonArr == null) {
+            return null;
+        }
+        ArrayList<Song> listSong = new ArrayList<>();
+        Gson gson = new Gson();
+        try {
+            JSONArray jsonArray = new JSONArray(jsonArr);
+            for (int i = 0; i < jsonArray.length(); i++) {
+                Song s = gson.fromJson(jsonArray.getString(i), Song.class);
+                listSong.add(s);
+            }
+            return listSong;
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    /**
+     * get last index of playing song
+     *
+     * @return
+     */
+    public int getLastSongIndex() {
+        SharedPreferences sharedPreferences = getSharedPreferences(Finals.KEY_SHARED_FILE, MODE_PRIVATE);
+        return sharedPreferences.getInt(Finals.KEY_LAST_INDEX, 0);
+    }
+
+    /**
+     * set up searching function to async task for better UX
+     *
+     */
+    public class SearchAsync extends AsyncTask<String, Void, String> {
+
+        ArrayList<Object> listObj;
+
+        @Override
+        protected String doInBackground(String... strings) {
+            listObj = SongHelper.searchAll(
+                    mSongManager.getListSong(),
+                    mSongManager.getListArtist(),
+                    mSongManager.getListAlbum(), strings[0]);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            if (!mSearchMain.isIconified())
+                mObjectAdapterSearching.setListObj(listObj);
+        }
+    }
+
+    /**
+     * handle notification event and headset event
+     *
+     */
     public static class BroadcastHandler extends BroadcastReceiver {
 
         private static boolean lastStateByPhone = false;
@@ -991,91 +1175,4 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    @Override
-    public void onBackPressed() {
-        Intent startMain = new Intent(Intent.ACTION_MAIN);
-        startMain.addCategory(Intent.CATEGORY_HOME);
-        startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(startMain);
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        saveToSharedPref();
-        super.onSaveInstanceState(outState);
-    }
-
-    public void saveProgress(int progress) {
-        preferences.edit().putInt(Finals.KEY_PLAY_MANAGER_PROGRESS, progress).commit();
-    }
-
-    public void saveToSharedPref() {
-        SharedPreferences sharedPreferences = getSharedPreferences(Finals.KEY_SHARED_FILE, MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        String jsonArr = new Gson().toJson(mPlayManager.getListSong());
-        editor.putString(Finals.KEY_LAST_LIST_SONG, jsonArr);
-        editor.putInt(Finals.KEY_LAST_INDEX, mPlayManager.getIndexCurrentSong());
-        editor.putBoolean(Finals.KEY_FRAGMENT_ALBUM_STATUS, albumFragment.isGrid());
-        editor.putBoolean(Finals.KEY_FRAGMENT_ARTIST_STATUS, artistFragment.isGrid());
-        int playState = 0;
-        if (mPlayManager.getState() instanceof ShufferingState) {
-            playState = Finals.PLAY_MANAGER_SHUFFLE;
-        } else if (mPlayManager.getState() instanceof RepeatingState) {
-            playState = Finals.PLAY_MANAGER_REPEAT;
-        } else if (mPlayManager.getState() instanceof ShuffleRepeat) {
-            playState = Finals.PLAY_MANAGER_SHUFFLE_REPEAT;
-        }
-        editor.putInt(Finals.KEY_PLAY_MANAGER_STATE, playState);
-        editor.commit();
-    }
-
-    public int getLastPlayManagerState() {
-        SharedPreferences preferences = getSharedPreferences(Finals.KEY_SHARED_FILE, MODE_PRIVATE);
-        return preferences.getInt(Finals.KEY_PLAY_MANAGER_STATE, 0);
-    }
-
-    public ArrayList<Song> getLastListSong() {
-        SharedPreferences sharedPreferences = getSharedPreferences(Finals.KEY_SHARED_FILE, MODE_PRIVATE);
-        String jsonArr = sharedPreferences.getString(Finals.KEY_LAST_LIST_SONG, null);
-        if (jsonArr == null) {
-            return null;
-        }
-        ArrayList<Song> listSong = new ArrayList<>();
-        Gson gson = new Gson();
-        try {
-            JSONArray jsonArray = new JSONArray(jsonArr);
-            for (int i = 0; i < jsonArray.length(); i++) {
-                Song s = gson.fromJson(jsonArray.getString(i), Song.class);
-                listSong.add(s);
-            }
-            return listSong;
-        } catch (JSONException e) {
-            return null;
-        }
-    }
-
-    public int getLastSongIndex() {
-        SharedPreferences sharedPreferences = getSharedPreferences(Finals.KEY_SHARED_FILE, MODE_PRIVATE);
-        return sharedPreferences.getInt(Finals.KEY_LAST_INDEX, 0);
-    }
-
-    public class SearchAsync extends AsyncTask<String, Void, String> {
-
-        ArrayList<Object> listObj;
-
-        @Override
-        protected String doInBackground(String... strings) {
-            listObj = SongHelper.searchAll(
-                    mSongManager.getListSong(),
-                    mSongManager.getListArtist(),
-                    mSongManager.getListAlbum(), strings[0]);
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            if (!mSearchMain.isIconified())
-                mObjectAdapterSearching.setListObj(listObj);
-        }
-    }
 }
