@@ -62,6 +62,7 @@ public class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ArtistHold
 
     @Override
     public void onBindViewHolder(ArtistHolder holder, int position) {
+        holder.ivArtistCover.setImageDrawable(holder.ivArtistCover.getContext().getResources().getDrawable(R.drawable.ic_artist_accent));
         Artist artist = listArtist.get(position);
         int size = artist.getListSong().size();
         String song = artist.getListSong().size() == 1 ? "song" : "songs";

@@ -13,6 +13,7 @@ import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
@@ -29,7 +30,6 @@ import android.support.v7.widget.Toolbar;
 
 import android.os.Bundle;
 import android.support.v7.widget.helper.ItemTouchHelper;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -107,7 +107,6 @@ public class MainActivity extends AppCompatActivity
     private CoordinatorLayout clMainContent;
     private CoordinatorLayout clListSongDetail;
     private ImageView ivCoverDetail;
-    private RecyclerView rvListDetail;
     private RecyclerView rvListSorting;
     private CoordinatorLayout clSortPlayingList;
     private MenuItem miChangeView;
@@ -118,28 +117,28 @@ public class MainActivity extends AppCompatActivity
     private SearchView mSearchMain;
     private SearchView svSearchPlayingList;
     private RecyclerView rvSearchPlayingListMusic;
-    private TextView tvDetailDescription;
-    private RecyclerView rvSearchDetailList;
-    private SearchView svSearchDetailList;
     private TextView tvSongNamePlaying;
-    private RelativeLayout rlDetailBack;
     private RelativeLayout rlPlayingBack;
     private RelativeLayout rlReorder;
     private RelativeLayout rlSortingBack;
+    private CollapsingToolbarLayout collapsingToolbar;
+    private Toolbar tbListDetail;
+    private RecyclerView rvListDetail;
+    private SearchView svDetailList;
 
     private SongFragment songFragment;
     private ArtistFragment artistFragment;
     private AlbumFragment albumFragment;
     private FragmentTransaction ft;
     private SongAdapter mSongAdapter;
-    private SongAdapter mSongDetailAdapter;
     private SongManager mSongManager;
     private static PlayManager mPlayManager;
     private NManager mNManager;
     private ObjectAdapter mObjectAdapterSearching;
     private SongAdapter mSongSearchPlayListAdapter;
-    private SongAdapter mSongSearchDetailList;
-    SharedPreferences preferences;
+    private SongAdapter mSongListDetailAdapter;
+    private SharedPreferences preferences;
+    private ArrayList<Song> listSongOrigin;
 
     ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
@@ -202,7 +201,6 @@ public class MainActivity extends AppCompatActivity
         clMainContent = findViewById(R.id.clMainContent);
         clListSongDetail = findViewById(R.id.clListSongDetail);
         ivCoverDetail = findViewById(R.id.ivCoverDetail);
-        rvListDetail = findViewById(R.id.rvListDetail);
         rvListSorting = findViewById(R.id.rvListSorting);
         clSortPlayingList = findViewById(R.id.clSortPlayingList);
         llMusicPlaying = findViewById(R.id.llMusicPlaying);
@@ -212,14 +210,22 @@ public class MainActivity extends AppCompatActivity
         ((EditText) svSearchPlayingList.findViewById(android.support.v7.appcompat.R.id.search_src_text))
                 .setTextColor(getResources().getColor(R.color.colorWhite));
         rvSearchPlayingListMusic = findViewById(R.id.rvSearchPlayingListMusic);
-        tvDetailDescription = findViewById(R.id.tvDetailDescription);
-        rvSearchDetailList = findViewById(R.id.rvSearchDetailList);
-        svSearchDetailList = findViewById(R.id.svSearchDetailList);
         tvSongNamePlaying = findViewById(R.id.tvSongNamePlaying);
-        rlDetailBack = findViewById(R.id.rlDetailBack);
         rlPlayingBack = findViewById(R.id.rlPlayingBack);
         rlReorder = findViewById(R.id.rlReorder);
         rlSortingBack = findViewById(R.id.rlSortingBack);
+        collapsingToolbar = findViewById(R.id.collapsingToolbar);
+        tbListDetail = findViewById(R.id.tbListDetail);
+        rvListDetail = findViewById(R.id.rvListDetail);
+
+        tbListDetail.inflateMenu(R.menu.menu_detail);
+        tbListDetail.setNavigationIcon(R.drawable.ic_arrow_back);
+        tbListDetail.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                displayMain();
+            }
+        });
 
         mSongManager = new SongManager();
         songFragment = new SongFragment();
@@ -236,31 +242,28 @@ public class MainActivity extends AppCompatActivity
         preferences = getSharedPreferences(Finals.KEY_SHARED_FILE, MODE_PRIVATE);
         albumFragment.setGrid(preferences.getBoolean(Finals.KEY_FRAGMENT_ALBUM_STATUS, true));
         artistFragment.setGrid(preferences.getBoolean(Finals.KEY_FRAGMENT_ARTIST_STATUS, true));
+        mSongListDetailAdapter = new SongAdapter(new ArrayList<Song>());
+        listSongOrigin = new ArrayList<>();
 
-        mSongDetailAdapter = new SongAdapter(new ArrayList<Song>());
-        mSongAdapter = new SongAdapter(new ArrayList<Song>());
-        mObjectAdapterSearching = new ObjectAdapter(new ArrayList<Object>());
-        mSongSearchPlayListAdapter = new SongAdapter(new ArrayList<Song>());
-        mSongSearchDetailList = new SongAdapter(new ArrayList<Song>());
-
-        rvSearchDetailList.setLayoutManager(new LinearLayoutManager(
+        rvListDetail.setLayoutManager(new LinearLayoutManager(
                 this,
                 LinearLayoutManager.VERTICAL,
                 false
         ));
-        rvSearchDetailList.setAdapter(mSongSearchDetailList);
-        rvSearchDetailList.addOnItemTouchListener(new RecyclerItemClickListener(
+        rvListDetail.addItemDecoration(new DividerItemDecoration(
                 this,
-                rvSearchDetailList,
+                DividerItemDecoration.VERTICAL));
+        rvListDetail.setAdapter(mSongListDetailAdapter);
+        rvListDetail.addOnItemTouchListener(new RecyclerItemClickListener(
+                this,
+                rvListDetail,
                 new RecyclerItemClickListener.OnItemClickListener() {
                     @Override
                     public void onItemClick(View view, int position) {
-                        Song s = mSongSearchDetailList.getListSong().get(position);
-                        for (int i = 0; i < mSongDetailAdapter.getListSong().size(); i++) {
-                            if (s.equals(mSongDetailAdapter.getListSong().get(i))) {
-                                updateListSong(mSongDetailAdapter.getListSong(), i);
-                                svSearchDetailList.setIconified(true);
-                                svSearchDetailList.onActionViewCollapsed();
+                        Song s = mSongListDetailAdapter.getListSong().get(position);
+                        for (int i = 0; i < listSongOrigin.size(); i++) {
+                            if (s.equals(listSongOrigin.get(i))) {
+                                updateListSong(listSongOrigin, i);
                                 return;
                             }
                         }
@@ -271,22 +274,10 @@ public class MainActivity extends AppCompatActivity
 
                     }
                 }));
-        svSearchDetailList.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                return false;
-            }
 
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                if (newText.isEmpty()) {
-                    mSongSearchDetailList.setListSong(new ArrayList<Song>());
-                    return false;
-                }
-                mSongSearchDetailList.setListSong(SongHelper.searchSong(mSongDetailAdapter.getListSong(), newText));
-                return false;
-            }
-        });
+        mSongAdapter = new SongAdapter(new ArrayList<Song>());
+        mObjectAdapterSearching = new ObjectAdapter(new ArrayList<Object>());
+        mSongSearchPlayListAdapter = new SongAdapter(new ArrayList<Song>());
 
         rvSearchPlayingListMusic.setLayoutManager(new LinearLayoutManager(
                 this,
@@ -417,34 +408,6 @@ public class MainActivity extends AppCompatActivity
                 displaySortingList();
             }
         });
-
-        rvListDetail.setLayoutManager(new LinearLayoutManager(
-                this,
-                LinearLayoutManager.VERTICAL,
-                false
-        ));
-        rvListDetail.addItemDecoration(new DividerItemDecoration(
-                this,
-                DividerItemDecoration.VERTICAL
-        ));
-        rvListDetail.setAdapter(mSongDetailAdapter);
-        rvListDetail.addOnItemTouchListener(new RecyclerItemClickListener(
-                this,
-                rvListDetail,
-                new RecyclerItemClickListener.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(View view, int position) {
-                        mPlayManager.updateListSong(mSongDetailAdapter.getListSong(), position);
-                        mSongAdapter.setListSong(mSongDetailAdapter.getListSong());
-                    }
-
-                    @Override
-                    public void onItemLongClick(View view, int position) {
-
-                    }
-                }
-        ));
-
         rvListSorting.setLayoutManager(new LinearLayoutManager(
                 this,
                 LinearLayoutManager.VERTICAL,
@@ -464,8 +427,6 @@ public class MainActivity extends AppCompatActivity
             public int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
                 indexCurrentBefore = mSongAdapter.getIndexCurrentSong();
                 songCurrentBefore = mSongAdapter.getListSong().get(indexCurrentBefore);
-//                Log.i(TAG, "-------------------------------");
-//                Log.i(TAG, "current playing song: " + songCurrentBefore.getName() + ", index current: " + indexCurrentBefore);
                 return makeFlag(ItemTouchHelper.ACTION_STATE_DRAG,
                         ItemTouchHelper.DOWN | ItemTouchHelper.UP | ItemTouchHelper.START | ItemTouchHelper.END);
             }
@@ -477,7 +438,6 @@ public class MainActivity extends AppCompatActivity
 
                 for (int i = 0; i < mSongAdapter.getListSong().size(); i++) {
                     if (songCurrentBefore.equals(mSongAdapter.getListSong().get(i))) {
-//                        Log.i(TAG, "index after: " + i);
                         mPlayManager.setIndexCurrentSong(i);
                         mPlayManager.setListSong(mSongAdapter.getListSong());
                         mSongAdapter.setIndexCurrentSong(i);
@@ -599,13 +559,6 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        rlDetailBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                displayMain();
-            }
-        });
-
         rlSortingBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -639,8 +592,23 @@ public class MainActivity extends AppCompatActivity
         AudioManager manager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         if (manager != null) {
             manager.registerMediaButtonEventReceiver(new ComponentName(this, BroadcastHandler.class));
-//            manager.registerMediaButtonEventReceiver(new ComponentName(getPackageName(), MyBroadcast.class.getName()));
         }
+
+
+        svDetailList = (SearchView) tbListDetail.getMenu().findItem(R.id.action_search_detail).getActionView();
+        svDetailList.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                mSongListDetailAdapter.setListSong(SongHelper.searchSong(listSongOrigin, newText));
+                return false;
+            }
+        });
     }
 
     @Override
@@ -673,6 +641,7 @@ public class MainActivity extends AppCompatActivity
                 return false;
             }
         });
+
         return true;
     }
 
@@ -768,10 +737,10 @@ public class MainActivity extends AppCompatActivity
             SlidingUpPanelLayout.PanelState newState
     ) {
         if (newState == SlidingUpPanelLayout.PanelState.COLLAPSED) {
-            llMusicNavigator.setVisibility(View.GONE);
+            llMusicNavigator.setVisibility(View.INVISIBLE);
             llMusicController.setVisibility(View.VISIBLE);
         } else if (newState == SlidingUpPanelLayout.PanelState.EXPANDED) {
-            llMusicController.setVisibility(View.GONE);
+            llMusicController.setVisibility(View.INVISIBLE);
             llMusicNavigator.setVisibility(View.VISIBLE);
         } else {
             llMusicNavigator.setVisibility(View.VISIBLE);
@@ -907,12 +876,13 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void displayArtistDetail(Artist artist) {
         displayListSongDetail(artist.getName());
-        mSongDetailAdapter.setListSong(artist.getListSong());
         if (artist.getBitmapCover() != null) {
             ivCoverDetail.setImageBitmap(artist.getBitmapCover());
         } else {
-            ivCoverDetail.setImageResource(R.drawable.ic_album_accent);
+            ivCoverDetail.setImageDrawable(getResources().getDrawable(R.drawable.ic_artist_accent));
         }
+        mSongListDetailAdapter.setListSong(artist.getListSong());
+        listSongOrigin = artist.getListSong();
     }
 
     /**
@@ -923,12 +893,13 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void displayAlbumDetail(Album album) {
         displayListSongDetail(album.getName());
-        mSongDetailAdapter.setListSong(album.getListSong());
         if (album.getBitmapCover() != null) {
             ivCoverDetail.setImageBitmap(album.getBitmapCover());
         } else {
-            ivCoverDetail.setImageResource(R.drawable.ic_album_accent);
+            ivCoverDetail.setImageDrawable(getResources().getDrawable(R.drawable.ic_album_accent));
         }
+        mSongListDetailAdapter.setListSong(album.getListSong());
+        listSongOrigin = album.getListSong();
     }
 
     /**
@@ -936,8 +907,8 @@ public class MainActivity extends AppCompatActivity
      */
     public void displayMain() {
         clMainContent.setVisibility(View.VISIBLE);
-        clListSongDetail.setVisibility(View.GONE);
-        clSortPlayingList.setVisibility(View.GONE);
+        clListSongDetail.setVisibility(View.INVISIBLE);
+        clSortPlayingList.setVisibility(View.INVISIBLE);
         mSlidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
         mSongAdapter.setSorting(false);
     }
@@ -948,20 +919,23 @@ public class MainActivity extends AppCompatActivity
      * @param description
      */
     public void displayListSongDetail(String description) {
-        tvDetailDescription.setText(description);
-        clMainContent.setVisibility(View.GONE);
+        collapsingToolbar.setTitle(description);
+        clMainContent.setVisibility(View.INVISIBLE);
         clListSongDetail.setVisibility(View.VISIBLE);
-        clSortPlayingList.setVisibility(View.GONE);
+        clSortPlayingList.setVisibility(View.INVISIBLE);
         mSlidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
         mSongAdapter.setSorting(false);
+        svDetailList.setQuery("", false);
+        svDetailList.setIconified(true);
+        tbListDetail.collapseActionView();
     }
 
     /**
      * display sorting playing list screen
      */
     public void displaySortingList() {
-        clMainContent.setVisibility(View.GONE);
-        clListSongDetail.setVisibility(View.GONE);
+        clMainContent.setVisibility(View.INVISIBLE);
+        clListSongDetail.setVisibility(View.INVISIBLE);
         clSortPlayingList.setVisibility(View.VISIBLE);
         mSlidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
         mSongAdapter.setSorting(true);
@@ -1013,6 +987,12 @@ public class MainActivity extends AppCompatActivity
      */
     @Override
     public void onBackPressed() {
+        if (clSortPlayingList.getVisibility() == View.VISIBLE
+                || clListSongDetail.getVisibility() == View.VISIBLE
+                || mSlidingUpPanelLayout.getPanelState() == SlidingUpPanelLayout.PanelState.EXPANDED) {
+            displayMain();
+            return;
+        }
         Intent startMain = new Intent(Intent.ACTION_MAIN);
         startMain.addCategory(Intent.CATEGORY_HOME);
         startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

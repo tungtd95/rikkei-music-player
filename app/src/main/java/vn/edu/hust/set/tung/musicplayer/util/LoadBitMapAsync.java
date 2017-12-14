@@ -6,6 +6,7 @@ import android.widget.ImageView;
 
 import java.util.ArrayList;
 
+import vn.edu.hust.set.tung.musicplayer.R;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Album;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Artist;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Song;

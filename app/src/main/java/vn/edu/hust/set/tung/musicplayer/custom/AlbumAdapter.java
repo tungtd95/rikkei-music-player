@@ -55,6 +55,7 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.AlbumHolder>
 
     @Override
     public void onBindViewHolder(AlbumHolder holder, int position) {
+        holder.ivAlbumCover.setImageDrawable(holder.ivAlbumCover.getContext().getResources().getDrawable(R.drawable.ic_album_accent));
         Album album = listAlbum.get(position);
         holder.tvAlbumName.setText(album.getName());
         holder.tvAlbumArtist.setText(album.getListSong().get(0).getArtist());
