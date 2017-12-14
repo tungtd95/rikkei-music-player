@@ -29,6 +29,7 @@ import android.support.v7.widget.Toolbar;
 
 import android.os.Bundle;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -37,6 +38,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
@@ -104,16 +106,12 @@ public class MainActivity extends AppCompatActivity
     private ProgressBar pbController;
     private CoordinatorLayout clMainContent;
     private CoordinatorLayout clListSongDetail;
-    private ImageView ivDetailBack;
     private ImageView ivCoverDetail;
     private RecyclerView rvListDetail;
-    private ImageView ivSortingBack;
     private RecyclerView rvListSorting;
     private CoordinatorLayout clSortPlayingList;
-    private ImageView ivPlayingBack;
     private MenuItem miChangeView;
     private TabLayout tabLayout;
-    private ImageView ivReorder;
     private LinearLayout llMusicPlaying;
     private SeekArc seekBarPlaying;
     private RecyclerView rvListSearching;
@@ -124,6 +122,10 @@ public class MainActivity extends AppCompatActivity
     private RecyclerView rvSearchDetailList;
     private SearchView svSearchDetailList;
     private TextView tvSongNamePlaying;
+    private RelativeLayout rlDetailBack;
+    private RelativeLayout rlPlayingBack;
+    private RelativeLayout rlReorder;
+    private RelativeLayout rlSortingBack;
 
     private SongFragment songFragment;
     private ArtistFragment artistFragment;
@@ -134,7 +136,6 @@ public class MainActivity extends AppCompatActivity
     private SongManager mSongManager;
     private static PlayManager mPlayManager;
     private NManager mNManager;
-    private SongAdapter mSongSortingAdapter;
     private ObjectAdapter mObjectAdapterSearching;
     private SongAdapter mSongSearchPlayListAdapter;
     private SongAdapter mSongSearchDetailList;
@@ -200,14 +201,10 @@ public class MainActivity extends AppCompatActivity
         pbController = findViewById(R.id.pbController);
         clMainContent = findViewById(R.id.clMainContent);
         clListSongDetail = findViewById(R.id.clListSongDetail);
-        ivDetailBack = findViewById(R.id.ivDetailBack);
         ivCoverDetail = findViewById(R.id.ivCoverDetail);
         rvListDetail = findViewById(R.id.rvListDetail);
-        ivSortingBack = findViewById(R.id.ivSortingBack);
         rvListSorting = findViewById(R.id.rvListSorting);
         clSortPlayingList = findViewById(R.id.clSortPlayingList);
-        ivPlayingBack = findViewById(R.id.ivPlayingBack);
-        ivReorder = findViewById(R.id.ivReorder);
         llMusicPlaying = findViewById(R.id.llMusicPlaying);
         seekBarPlaying = findViewById(R.id.seekBarPlaying);
         rvListSearching = findViewById(R.id.rvListSearching);
@@ -219,6 +216,10 @@ public class MainActivity extends AppCompatActivity
         rvSearchDetailList = findViewById(R.id.rvSearchDetailList);
         svSearchDetailList = findViewById(R.id.svSearchDetailList);
         tvSongNamePlaying = findViewById(R.id.tvSongNamePlaying);
+        rlDetailBack = findViewById(R.id.rlDetailBack);
+        rlPlayingBack = findViewById(R.id.rlPlayingBack);
+        rlReorder = findViewById(R.id.rlReorder);
+        rlSortingBack = findViewById(R.id.rlSortingBack);
 
         mSongManager = new SongManager();
         songFragment = new SongFragment();
@@ -238,8 +239,6 @@ public class MainActivity extends AppCompatActivity
 
         mSongDetailAdapter = new SongAdapter(new ArrayList<Song>());
         mSongAdapter = new SongAdapter(new ArrayList<Song>());
-        mSongSortingAdapter = new SongAdapter(new ArrayList<Song>());
-        mSongSortingAdapter.setSorting(true);
         mObjectAdapterSearching = new ObjectAdapter(new ArrayList<Object>());
         mSongSearchPlayListAdapter = new SongAdapter(new ArrayList<Song>());
         mSongSearchDetailList = new SongAdapter(new ArrayList<Song>());
@@ -369,10 +368,16 @@ public class MainActivity extends AppCompatActivity
                 }));
 
         ArrayList<Song> listSong = getLastListSong();
-        int indexLast = getLastSongIndex();
+        final int indexLast = getLastSongIndex();
         if (listSong != null && listSong.size() > 0) {
             mSongAdapter.setListSong(listSong);
-            updateSong(listSong.get(indexLast), indexLast);
+            mSongAdapter.setIndexCurrentSong(indexLast);
+            mSongAdapter.notifyDataSetChanged();
+
+            Song song = listSong.get(indexLast);
+            tvSongPlaying.setText(song.getName().trim());
+            tvArtistPlaying.setText(song.getArtist().trim());
+            tvSongNamePlaying.setText(song.getName());
         }
 
         llMusicPlaying.setOnClickListener(new View.OnClickListener() {
@@ -406,7 +411,7 @@ public class MainActivity extends AppCompatActivity
                     }
                 }));
 
-        ivReorder.setOnClickListener(new View.OnClickListener() {
+        rlReorder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 displaySortingList();
@@ -449,7 +454,47 @@ public class MainActivity extends AppCompatActivity
                 this,
                 DividerItemDecoration.VERTICAL
         ));
-        rvListSorting.setAdapter(mSongSortingAdapter);
+        rvListSorting.setAdapter(mSongAdapter);
+
+        ItemTouchHelper.Callback callback = new ItemTouchHelper.Callback() {
+            int indexCurrentBefore;
+            Song songCurrentBefore;
+
+            @Override
+            public int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+                indexCurrentBefore = mSongAdapter.getIndexCurrentSong();
+                songCurrentBefore = mSongAdapter.getListSong().get(indexCurrentBefore);
+//                Log.i(TAG, "-------------------------------");
+//                Log.i(TAG, "current playing song: " + songCurrentBefore.getName() + ", index current: " + indexCurrentBefore);
+                return makeFlag(ItemTouchHelper.ACTION_STATE_DRAG,
+                        ItemTouchHelper.DOWN | ItemTouchHelper.UP | ItemTouchHelper.START | ItemTouchHelper.END);
+            }
+
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                Collections.swap(mSongAdapter.getListSong(), viewHolder.getAdapterPosition(), target.getAdapterPosition());
+                mSongAdapter.notifyItemMoved(viewHolder.getAdapterPosition(), target.getAdapterPosition());
+
+                for (int i = 0; i < mSongAdapter.getListSong().size(); i++) {
+                    if (songCurrentBefore.equals(mSongAdapter.getListSong().get(i))) {
+//                        Log.i(TAG, "index after: " + i);
+                        mPlayManager.setIndexCurrentSong(i);
+                        mPlayManager.setListSong(mSongAdapter.getListSong());
+                        mSongAdapter.setIndexCurrentSong(i);
+                        break;
+                    }
+                }
+                return true;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+
+            }
+        };
+
+        ItemTouchHelper ith = new ItemTouchHelper(callback);
+        ith.attachToRecyclerView(rvListSorting);
 
         ft = getSupportFragmentManager().beginTransaction();
         ft.replace(R.id.flContainer, songFragment);
@@ -493,7 +538,7 @@ public class MainActivity extends AppCompatActivity
             requestPermission();
         }
 
-        ivPlayingBack.setOnClickListener(new View.OnClickListener() {
+        rlPlayingBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 displayMain();
@@ -554,52 +599,20 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        ivDetailBack.setOnClickListener(new View.OnClickListener() {
+        rlDetailBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 displayMain();
             }
         });
 
-        ivSortingBack.setOnClickListener(new View.OnClickListener() {
+        rlSortingBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 displayMain();
                 mSlidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
             }
         });
-
-        ItemTouchHelper.Callback callback = new ItemTouchHelper.Callback() {
-            @Override
-            public int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
-                return makeFlag(ItemTouchHelper.ACTION_STATE_DRAG,
-                        ItemTouchHelper.DOWN | ItemTouchHelper.UP | ItemTouchHelper.START | ItemTouchHelper.END);
-            }
-
-            @Override
-            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-                Song songBefore = mSongAdapter.getListSong().get(mSongAdapter.getIndexCurrentSong());
-//                Log.i(TAG, "index song before moving: " + mSongAdapter.getIndexCurrentSong());
-                Collections.swap(mSongSortingAdapter.getListSong(), viewHolder.getAdapterPosition(), target.getAdapterPosition());
-                mSongSortingAdapter.notifyItemMoved(viewHolder.getAdapterPosition(), target.getAdapterPosition());
-                mSongAdapter.notifyItemMoved(viewHolder.getAdapterPosition(), target.getAdapterPosition());
-                for (int i = 0; i < mSongAdapter.getListSong().size(); i++) {
-                    if (songBefore.equals(mSongAdapter.getListSong().get(i))) {
-                        mPlayManager.setIndexCurrentSong(i);
-//                        Log.i(TAG, "index song after moving: " + i);
-                    }
-                }
-                return true;
-            }
-
-            @Override
-            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-
-            }
-        };
-
-        ItemTouchHelper ith = new ItemTouchHelper(callback);
-        ith.attachToRecyclerView(rvListSorting);
 
         seekBarPlaying.setOnSeekArcChangeListener(new SeekArc.OnSeekArcChangeListener() {
             @Override
@@ -791,6 +804,7 @@ public class MainActivity extends AppCompatActivity
         tvArtistPlaying.setText(song.getArtist().trim());
         tvSongNamePlaying.setText(song.getName());
         mSongAdapter.setIndexCurrentSong(index);
+        mSongAdapter.notifyDataSetChanged();
         try {
             saveToSharedPref();
         } catch (Exception e) {
@@ -925,6 +939,7 @@ public class MainActivity extends AppCompatActivity
         clListSongDetail.setVisibility(View.GONE);
         clSortPlayingList.setVisibility(View.GONE);
         mSlidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+        mSongAdapter.setSorting(false);
     }
 
     /**
@@ -938,6 +953,7 @@ public class MainActivity extends AppCompatActivity
         clListSongDetail.setVisibility(View.VISIBLE);
         clSortPlayingList.setVisibility(View.GONE);
         mSlidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+        mSongAdapter.setSorting(false);
     }
 
     /**
@@ -948,7 +964,7 @@ public class MainActivity extends AppCompatActivity
         clListSongDetail.setVisibility(View.GONE);
         clSortPlayingList.setVisibility(View.VISIBLE);
         mSlidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
-        mSongSortingAdapter.setListSong(mPlayManager.getListSong());
+        mSongAdapter.setSorting(true);
     }
 
     /**
@@ -994,7 +1010,6 @@ public class MainActivity extends AppCompatActivity
 
     /**
      * do not allow android system destroy activity when press back button
-     *
      */
     @Override
     public void onBackPressed() {
@@ -1021,7 +1036,6 @@ public class MainActivity extends AppCompatActivity
 
     /**
      * save playing list song and song to shared preference
-     *
      */
     public void saveToSharedPref() {
         SharedPreferences sharedPreferences = getSharedPreferences(Finals.KEY_SHARED_FILE, MODE_PRIVATE);
@@ -1090,7 +1104,6 @@ public class MainActivity extends AppCompatActivity
 
     /**
      * set up searching function to async task for better UX
-     *
      */
     public class SearchAsync extends AsyncTask<String, Void, String> {
 
@@ -1114,7 +1127,6 @@ public class MainActivity extends AppCompatActivity
 
     /**
      * handle notification event and headset event
-     *
      */
     public static class BroadcastHandler extends BroadcastReceiver {
 

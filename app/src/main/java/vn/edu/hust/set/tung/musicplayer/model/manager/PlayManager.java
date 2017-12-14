@@ -336,6 +336,5 @@ public class PlayManager extends Service implements State, PlayManagerObservable
 
     public void setIndexCurrentSong(int indexCurrentSong) {
         this.indexCurrentSong = indexCurrentSong;
-        notifySongChanged();
     }
 }

@@ -51,6 +51,8 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
         holder.tvSong.setText(listSong.get(position).getName());
         if (isSorting) {
             holder.ivSortingIndicator.setVisibility(View.VISIBLE);
+        } else {
+            holder.ivSortingIndicator.setVisibility(View.GONE);
         }
         if (holder.getAdapterPosition() == indexCurrentSong) {
             holder.tvSong.setTextColor(holder.tvSong.getResources().getColor(R.color.colorAccent));
@@ -65,7 +67,6 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
 
     public void setIndexCurrentSong(int indexCurrentSong) {
         this.indexCurrentSong = indexCurrentSong;
-        notifyDataSetChanged();
     }
 
     @Override
@@ -93,5 +94,6 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
 
     public void setSorting(boolean sorting) {
         isSorting = sorting;
+        notifyDataSetChanged();
     }
 }
