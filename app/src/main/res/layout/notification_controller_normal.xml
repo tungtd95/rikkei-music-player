@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center"
@@ -9,13 +10,15 @@
     <ImageView
         android:layout_width="@dimen/notification_height_normal"
         android:layout_height="@dimen/notification_height_normal"
-        android:src="@drawable/ic_album_accent"/>
+        android:src="@drawable/ic_album_accent"
+        tools:ignore="ContentDescription" />
     <RelativeLayout
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
         android:gravity="center_vertical"
-        android:layout_marginLeft="@dimen/padding_small">
+        android:layout_marginLeft="@dimen/padding_small"
+        android:layout_marginStart="@dimen/padding_small">
 
         <TextView
             android:id="@+id/tvNotificationSongNormal"
@@ -40,17 +43,20 @@
         android:id="@+id/ivNotificationPreviousNormal"
         android:layout_width="@dimen/notification_button"
         android:layout_height="@dimen/notification_button"
-        android:background="@drawable/ic_skip_previous" />
+        android:background="@drawable/ic_skip_previous"
+        tools:ignore="ContentDescription" />
 
     <ImageView
         android:id="@+id/ivNotificationPlayNormal"
         android:layout_width="@dimen/notification_button_large"
         android:layout_height="@dimen/notification_button_large"
-        android:src="@drawable/ic_play" />
+        android:src="@drawable/ic_play"
+        tools:ignore="ContentDescription" />
 
     <ImageView
         android:id="@+id/ivNotificationNextNormal"
         android:layout_width="@dimen/notification_button"
         android:layout_height="@dimen/notification_button"
-        android:background="@drawable/ic_skip_next" />
+        android:background="@drawable/ic_skip_next"
+        tools:ignore="ContentDescription" />
 </LinearLayout>

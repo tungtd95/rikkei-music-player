@@ -21,16 +21,10 @@ import vn.edu.hust.set.tung.musicplayer.model.obj.Artist;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Song;
 import vn.edu.hust.set.tung.musicplayer.model.observerpattern.SongManagerObserver;
 
-/**
- * Created by tungt on 11/24/17.
- */
-
 public class SongFragment extends Fragment implements SongManagerObserver{
 
     private ArrayList<Song> mListSong;
     private SongAdapter mSongAdapter;
-    private RecyclerView rvListSong;
-    private LinearLayoutManager mLinearLayoutManager;
     private ListSongChangedListener mListSongChangedListener;
 
     public SongFragment() {
@@ -46,8 +40,8 @@ public class SongFragment extends Fragment implements SongManagerObserver{
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_song, container, false);
-        mLinearLayoutManager = new LinearLayoutManager(getActivity());
-        rvListSong = view.findViewById(R.id.rvListSong);
+        LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(getActivity());
+        RecyclerView rvListSong = view.findViewById(R.id.rvListSong);
         rvListSong.setLayoutManager(mLinearLayoutManager);
         rvListSong.setAdapter(mSongAdapter);
         rvListSong.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL));

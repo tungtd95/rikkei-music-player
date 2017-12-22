@@ -6,11 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
 import android.provider.MediaStore;
-import android.util.Log;
-import android.util.Patterns;
 
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
@@ -19,21 +15,15 @@ import vn.edu.hust.set.tung.musicplayer.model.obj.Album;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Artist;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Song;
 
-import static vn.edu.hust.set.tung.musicplayer.activity.MainActivity.TAG;
-
-/**
- * Created by tungt on 11/23/17.
- */
-
 public class SongHelper {
 
-    Context context;
+    private Context context;
 
     public SongHelper(Context context) {
         this.context = context;
     }
 
-    public Cursor populateQueries() {
+    private Cursor populateQueries() {
         String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0";
 
         String[] projection = {
@@ -44,7 +34,7 @@ public class SongHelper {
                 MediaStore.Audio.Media.DATA,    // filepath of the audio file
                 MediaStore.Audio.Media._ID,     // context id/ uri id of the file
         };
-        Cursor cursor = null;
+        Cursor cursor;
         cursor = this.context.getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                 projection,
                 selection,
@@ -131,7 +121,7 @@ public class SongHelper {
         return listArtist;
     }
 
-    public static Bitmap songToBitmap(Song song) {
+    static Bitmap songToBitmap(Song song) {
         Bitmap bitmap = null;
         MediaMetadataRetriever metadataRetriever = new MediaMetadataRetriever();
         metadataRetriever.setDataSource(song.getUri());
@@ -156,7 +146,7 @@ public class SongHelper {
         return list;
     }
 
-    public static ArrayList<Album> searchAlbum(ArrayList<Album> listAlbum, String keyWord) {
+    private static ArrayList<Album> searchAlbum(ArrayList<Album> listAlbum, String keyWord) {
         ArrayList<Album> list = new ArrayList<>();
         keyWord = convertString(keyWord);
         for (Album album : listAlbum) {
@@ -170,7 +160,7 @@ public class SongHelper {
         return list;
     }
 
-    public static ArrayList<Artist> searchArtist(ArrayList<Artist> listArtist, String keyWord) {
+    private static ArrayList<Artist> searchArtist(ArrayList<Artist> listArtist, String keyWord) {
         ArrayList<Artist> list = new ArrayList<>();
         keyWord = convertString(keyWord);
         for (Artist artist : listArtist) {
@@ -215,7 +205,7 @@ public class SongHelper {
         return listObj;
     }
 
-    public static String convertString(String s) {
+    private static String convertString(String s) {
         String temp = Normalizer.normalize(s, Normalizer.Form.NFD);
         Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
         return pattern.matcher(temp).replaceAll("").replaceAll("đ", "d").toLowerCase().trim();

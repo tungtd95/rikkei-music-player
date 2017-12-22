@@ -2,7 +2,6 @@ package vn.edu.hust.set.tung.musicplayer.custom;
 
 import android.os.AsyncTask;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,11 +14,6 @@ import vn.edu.hust.set.tung.musicplayer.R;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Album;
 import vn.edu.hust.set.tung.musicplayer.util.LoadBitMapAsync;
 
-import static vn.edu.hust.set.tung.musicplayer.activity.MainActivity.TAG;
-
-/**
- * Created by tungt on 11/24/17.
- */
 
 public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.AlbumHolder> {
 
@@ -43,10 +37,6 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.AlbumHolder>
         } else {
             return R.layout.item_album_list;
         }
-    }
-
-    public boolean isGrid() {
-        return isGrid;
     }
 
     public void setGrid(boolean grid) {
@@ -73,22 +63,18 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.AlbumHolder>
         return listAlbum == null ? 0 : listAlbum.size();
     }
 
-    public class AlbumHolder extends RecyclerView.ViewHolder {
+    class AlbumHolder extends RecyclerView.ViewHolder {
 
         TextView tvAlbumName;
         TextView tvAlbumArtist;
         ImageView ivAlbumCover;
 
-        public AlbumHolder(View itemView) {
+        AlbumHolder(View itemView) {
             super(itemView);
             tvAlbumName = itemView.findViewById(R.id.tvAlbumName);
             tvAlbumArtist = itemView.findViewById(R.id.tvAlbumArtist);
             ivAlbumCover = itemView.findViewById(R.id.ivAlbumCover);
         }
-    }
-
-    public ArrayList<Album> getListAlbum() {
-        return listAlbum;
     }
 
     public void setListAlbum(ArrayList<Album> listAlbum) {

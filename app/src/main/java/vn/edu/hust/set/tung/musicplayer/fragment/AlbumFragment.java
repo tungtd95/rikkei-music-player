@@ -1,7 +1,5 @@
 package vn.edu.hust.set.tung.musicplayer.fragment;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -9,7 +7,6 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,13 +23,6 @@ import vn.edu.hust.set.tung.musicplayer.model.obj.Song;
 import vn.edu.hust.set.tung.musicplayer.model.observerpattern.SongManagerObserver;
 import vn.edu.hust.set.tung.musicplayer.model.stratergypattern.DisplayAlbumDetailListener;
 import vn.edu.hust.set.tung.musicplayer.model.stratergypattern.FragmentViewChangedListener;
-import vn.edu.hust.set.tung.musicplayer.util.Finals;
-
-import static vn.edu.hust.set.tung.musicplayer.activity.MainActivity.TAG;
-
-/**
- * Created by tungt on 11/24/17.
- */
 
 public class AlbumFragment extends Fragment implements SongManagerObserver {
 
@@ -41,7 +31,6 @@ public class AlbumFragment extends Fragment implements SongManagerObserver {
 
     private ArrayList<Album> mListAlbum;
     private AlbumAdapter mAlbumAdapter;
-    private RecyclerView rvListAlbum;
     private DisplayAlbumDetailListener displayAlbumDetailListener;
     private boolean isGrid = true;
     FragmentViewChangedListener fragmentViewChangedListener;
@@ -58,7 +47,7 @@ public class AlbumFragment extends Fragment implements SongManagerObserver {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_albums, container, false);
-        rvListAlbum = view.findViewById(R.id.rvListAlbum);
+        RecyclerView rvListAlbum = view.findViewById(R.id.rvListAlbum);
         mAlbumAdapter.setGrid(isGrid);
         if (isGrid) {
             GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), GRID_COUNT);

@@ -4,10 +4,6 @@ import android.graphics.Rect;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
-/**
- * Created by tungt on 10/18/17.
- */
-
 public class ItemDecorationAlbumColumns extends RecyclerView.ItemDecoration {
 
     private int mSizeGridSpacingPx;

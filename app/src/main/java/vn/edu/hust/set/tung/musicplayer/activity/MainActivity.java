@@ -10,7 +10,7 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
-import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CollapsingToolbarLayout;
@@ -27,8 +27,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
-
-import android.os.Bundle;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -55,9 +53,16 @@ import vn.edu.hust.set.tung.musicplayer.R;
 import vn.edu.hust.set.tung.musicplayer.custom.ObjectAdapter;
 import vn.edu.hust.set.tung.musicplayer.custom.RecyclerItemClickListener;
 import vn.edu.hust.set.tung.musicplayer.custom.SongAdapter;
+import vn.edu.hust.set.tung.musicplayer.fragment.AlbumFragment;
+import vn.edu.hust.set.tung.musicplayer.fragment.ArtistFragment;
+import vn.edu.hust.set.tung.musicplayer.fragment.SongFragment;
 import vn.edu.hust.set.tung.musicplayer.model.manager.NManager;
+import vn.edu.hust.set.tung.musicplayer.model.manager.PlayManager;
+import vn.edu.hust.set.tung.musicplayer.model.manager.SongManager;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Album;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Artist;
+import vn.edu.hust.set.tung.musicplayer.model.obj.Song;
+import vn.edu.hust.set.tung.musicplayer.model.observerpattern.PlayManagerObserver;
 import vn.edu.hust.set.tung.musicplayer.model.statepattern.NormalState;
 import vn.edu.hust.set.tung.musicplayer.model.statepattern.RepeatingState;
 import vn.edu.hust.set.tung.musicplayer.model.statepattern.ShufferingState;
@@ -67,13 +72,6 @@ import vn.edu.hust.set.tung.musicplayer.model.stratergypattern.DisplayAlbumDetai
 import vn.edu.hust.set.tung.musicplayer.model.stratergypattern.DisplayArtistDetailListener;
 import vn.edu.hust.set.tung.musicplayer.model.stratergypattern.FragmentViewChangedListener;
 import vn.edu.hust.set.tung.musicplayer.model.stratergypattern.ListSongChangedListener;
-import vn.edu.hust.set.tung.musicplayer.fragment.AlbumFragment;
-import vn.edu.hust.set.tung.musicplayer.fragment.ArtistFragment;
-import vn.edu.hust.set.tung.musicplayer.fragment.SongFragment;
-import vn.edu.hust.set.tung.musicplayer.model.manager.PlayManager;
-import vn.edu.hust.set.tung.musicplayer.model.manager.SongManager;
-import vn.edu.hust.set.tung.musicplayer.model.obj.Song;
-import vn.edu.hust.set.tung.musicplayer.model.observerpattern.PlayManagerObserver;
 import vn.edu.hust.set.tung.musicplayer.util.Finals;
 import vn.edu.hust.set.tung.musicplayer.util.SongHelper;
 
@@ -88,8 +86,7 @@ public class MainActivity extends AppCompatActivity
         FragmentViewChangedListener {
 
     private static final int KEY_REQUEST_PERMISSION = 22;
-    public static final String TAG = "main";
-
+//    public static final String TAG = "main";
     private SlidingUpPanelLayout mSlidingUpPanelLayout;
     private LinearLayout llMusicController;
     private LinearLayout llMusicNavigator;
@@ -618,7 +615,13 @@ public class MainActivity extends AppCompatActivity
                     mObjectAdapterSearching.setListObj(new ArrayList<>());
                     return false;
                 }
-                new SearchAsync().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, newText);
+
+                ArrayList<Object> listObj = SongHelper.searchAll(
+                        mSongManager.getListSong(),
+                        mSongManager.getListArtist(),
+                        mSongManager.getListAlbum(), newText);
+                if (!mSearchMain.isIconified())
+                    mObjectAdapterSearching.setListObj(listObj);
                 return false;
             }
         });
@@ -701,9 +704,6 @@ public class MainActivity extends AppCompatActivity
 
     /**
      * fade music controller and music navigator depend on slide offset
-     *
-     * @param panel
-     * @param slideOffset
      */
     @Override
     public void onPanelSlide(View panel, float slideOffset) {
@@ -713,10 +713,6 @@ public class MainActivity extends AppCompatActivity
 
     /**
      * display or hide music navigator and music controller depend on slide state
-     *
-     * @param panel
-     * @param previousState
-     * @param newState
      */
     @Override
     public void onPanelStateChanged(
@@ -739,9 +735,6 @@ public class MainActivity extends AppCompatActivity
 
     /**
      * update song for music controller and play manager
-     *
-     * @param listSong
-     * @param index
      */
     @Override
     public void updateListSong(ArrayList<Song> listSong, int index) {
@@ -751,9 +744,6 @@ public class MainActivity extends AppCompatActivity
 
     /**
      * play manager notify about song changed
-     *
-     * @param song
-     * @param index
      */
     @Override
     public void updateSong(Song song, int index) {
@@ -764,14 +754,14 @@ public class MainActivity extends AppCompatActivity
         mSongAdapter.notifyDataSetChanged();
         try {
             saveToSharedPref();
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
     }
 
     /**
      * observable notify about playing or not playing state
      *
-     * @param isPlaying
+     * @param isPlaying playing state
      */
     @Override
     public void updatePlayingState(boolean isPlaying) {
@@ -787,7 +777,7 @@ public class MainActivity extends AppCompatActivity
     /**
      * observable notify about shuffle and repeat function changed
      *
-     * @param state
+     * @param state shuffle of repeat state
      */
     @Override
     public void updatePlayManagerState(State state) {
@@ -815,7 +805,7 @@ public class MainActivity extends AppCompatActivity
     /**
      * observable notify about song progress changed
      *
-     * @param progress
+     * @param progress current song progress
      */
     @Override
     public void updatePlayingProgress(int progress) {
@@ -829,9 +819,9 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void run() {
                 if (hour == 0) {
-                    tvProgressTime.setText(min + ":" + sec);
+                    tvProgressTime.setText(String.format("%s:%s", min, sec));
                 } else {
-                    tvProgressTime.setText(hou + ":" + min + ":" + sec);
+                    tvProgressTime.setText(String.format("%s:%s:%s", hou, min, sec));
                 }
             }
         });
@@ -840,8 +830,8 @@ public class MainActivity extends AppCompatActivity
     /**
      * observable notify about song progress changed
      *
-     * @param progress
-     * @param duration
+     * @param progress current song progress
+     * @param duration current song duration
      */
     @Override
     public void updateForProgressBar(final int progress, final int duration) {
@@ -859,7 +849,7 @@ public class MainActivity extends AppCompatActivity
     /**
      * observable notify about display list song of an artist
      *
-     * @param artist
+     * @param artist selected artist
      */
     @Override
     public void displayArtistDetail(Artist artist) {
@@ -876,7 +866,7 @@ public class MainActivity extends AppCompatActivity
     /**
      * observable notify about display list song of an album
      *
-     * @param album
+     * @param album selected album
      */
     @Override
     public void displayAlbumDetail(Album album) {
@@ -904,7 +894,7 @@ public class MainActivity extends AppCompatActivity
     /**
      * display list song and description of album or artist
      *
-     * @param description
+     * @param description album name or artist name
      */
     public void displayListSongDetail(String description) {
         collapsingToolbar.setTitle(description);
@@ -932,7 +922,7 @@ public class MainActivity extends AppCompatActivity
     /**
      * correspond to switch between grid view and list view of fragment
      *
-     * @param fragment
+     * @param fragment album fragment or artist fragment
      */
     @Override
     public void changedViewFragment(Fragment fragment) {
@@ -996,10 +986,10 @@ public class MainActivity extends AppCompatActivity
     /**
      * save playing progress to shared preference
      *
-     * @param progress
+     * @param progress current song progress
      */
     public void saveProgress(int progress) {
-        preferences.edit().putInt(Finals.KEY_PLAY_MANAGER_PROGRESS, progress).commit();
+        preferences.edit().putInt(Finals.KEY_PLAY_MANAGER_PROGRESS, progress).apply();
     }
 
     /**
@@ -1022,7 +1012,7 @@ public class MainActivity extends AppCompatActivity
             playState = Finals.PLAY_MANAGER_SHUFFLE_REPEAT;
         }
         editor.putInt(Finals.KEY_PLAY_MANAGER_STATE, playState);
-        editor.commit();
+        editor.apply();
     }
 
     /**
@@ -1063,34 +1053,11 @@ public class MainActivity extends AppCompatActivity
     /**
      * get last index of playing song
      *
-     * @return
+     * @return last song index before turn of the app
      */
     public int getLastSongIndex() {
         SharedPreferences sharedPreferences = getSharedPreferences(Finals.KEY_SHARED_FILE, MODE_PRIVATE);
         return sharedPreferences.getInt(Finals.KEY_LAST_INDEX, 0);
-    }
-
-    /**
-     * set up searching function to async task for better UX
-     */
-    public class SearchAsync extends AsyncTask<String, Void, String> {
-
-        ArrayList<Object> listObj;
-
-        @Override
-        protected String doInBackground(String... strings) {
-            listObj = SongHelper.searchAll(
-                    mSongManager.getListSong(),
-                    mSongManager.getListArtist(),
-                    mSongManager.getListAlbum(), strings[0]);
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            if (!mSearchMain.isIconified())
-                mObjectAdapterSearching.setListObj(listObj);
-        }
     }
 
     /**
@@ -1104,9 +1071,18 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
+            if (action == null) {
+                return;
+            }
             if (action.equals(Intent.ACTION_MEDIA_BUTTON)) {
                 Bundle bundle = intent.getExtras();
+                if (bundle == null) {
+                    return;
+                }
                 KeyEvent keyEvent = (KeyEvent) bundle.get(Intent.EXTRA_KEY_EVENT);
+                if (keyEvent == null) {
+                    return;
+                }
                 if (keyEvent.getAction() == KeyEvent.ACTION_DOWN) {
                     mPlayManager.handlePlayingState();
                 }
@@ -1118,7 +1094,7 @@ public class MainActivity extends AppCompatActivity
                     if (state.equals("RINGING") || state.equals("OFFHOOK")) {
                         lastStateByPhone = mPlayManager.isPlaying();
                         mPlayManager.handlePause();
-                    } else if (state.equals("IDLE") && lastStateByPhone == true) {
+                    } else if (state.equals("IDLE") && lastStateByPhone) {
                         mPlayManager.handlePlay();
                     }
                 }
@@ -1150,7 +1126,6 @@ public class MainActivity extends AppCompatActivity
                 if (mPlayManager != null) {
                     mPlayManager.handlePreviousSong();
                 }
-                return;
             }
         }
     }

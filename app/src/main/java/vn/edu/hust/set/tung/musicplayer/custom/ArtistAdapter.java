@@ -9,14 +9,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 import vn.edu.hust.set.tung.musicplayer.R;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Artist;
 import vn.edu.hust.set.tung.musicplayer.util.LoadBitMapAsync;
-
-/**
- * Created by tungt on 11/24/17.
- */
 
 public class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ArtistHolder> {
 
@@ -42,17 +39,8 @@ public class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ArtistHold
         }
     }
 
-    public boolean isGrid() {
-        return isGrid;
-    }
-
     public void setGrid(boolean grid) {
         isGrid = grid;
-    }
-
-
-    public ArrayList<Artist> getListArtist() {
-        return listArtist;
     }
 
     public void setListArtist(ArrayList<Artist> listArtist) {
@@ -67,7 +55,7 @@ public class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ArtistHold
         int size = artist.getListSong().size();
         String song = artist.getListSong().size() == 1 ? "song" : "songs";
         holder.tvArtistName.setText(artist.getName());
-        holder.tvArtistDetail.setText(size + " " + song);
+        holder.tvArtistDetail.setText(String.format(Locale.getDefault(), "%d %s", size, song));
         if (artist.getBitmapCover() != null) {
             holder.ivArtistCover.setImageBitmap(artist.getBitmapCover());
             return;
@@ -82,13 +70,13 @@ public class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ArtistHold
         return listArtist == null ? 0 : listArtist.size();
     }
 
-    public class ArtistHolder extends RecyclerView.ViewHolder {
+    class ArtistHolder extends RecyclerView.ViewHolder {
 
         TextView tvArtistName;
         TextView tvArtistDetail;
         ImageView ivArtistCover;
 
-        public ArtistHolder(View itemView) {
+        ArtistHolder(View itemView) {
             super(itemView);
             tvArtistName = itemView.findViewById(R.id.tvArtistName);
             tvArtistDetail = itemView.findViewById(R.id.tvArtistDetail);

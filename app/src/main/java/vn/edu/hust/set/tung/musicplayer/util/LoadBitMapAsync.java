@@ -5,26 +5,22 @@ import android.os.AsyncTask;
 import android.widget.ImageView;
 
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 
-import vn.edu.hust.set.tung.musicplayer.R;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Album;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Artist;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Song;
 
-/**
- * Created by tungt on 11/24/17.
- */
-
 public class LoadBitMapAsync extends AsyncTask<String, Void, String> {
-    ArrayList<Song> listSong;
-    ImageView imageView;
-    Bitmap bitmap;
-    Album album;
-    Artist artist;
+    private ArrayList<Song> listSong;
+    private final AtomicReference<ImageView> imageView = new AtomicReference<>();
+    private Bitmap bitmap;
+    private Album album;
+    private Artist artist;
 
     public LoadBitMapAsync(ArrayList<Song> listSong, ImageView imageView) {
         this.listSong = listSong;
-        this.imageView = imageView;
+        this.imageView.set(imageView);
     }
 
     @Override
@@ -43,7 +39,8 @@ public class LoadBitMapAsync extends AsyncTask<String, Void, String> {
     @Override
     protected void onPostExecute(String s) {
         if (bitmap != null) {
-            imageView.setImageBitmap(bitmap);
+            if (imageView.get() != null)
+                imageView.get().setImageBitmap(bitmap);
             if (album != null) {
                 album.setBitmapCover(bitmap);
             } else if (artist != null) {

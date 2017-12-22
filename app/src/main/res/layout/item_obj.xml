@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
@@ -10,7 +11,8 @@
         android:layout_width="@dimen/item_image_size"
         android:layout_height="@dimen/item_image_size"
         android:src="@drawable/ic_song_accent"
-        android:padding="@dimen/small_padding"/>
+        android:padding="@dimen/small_padding"
+        tools:ignore="ContentDescription" />
     <TextView
         android:id="@+id/tvNameObj"
         android:layout_width="match_parent"
@@ -19,5 +21,6 @@
         android:textSize="@dimen/text_item_song_title_size"
         android:ellipsize="end"
         android:singleLine="true"
-        android:layout_marginLeft="@dimen/small_padding"/>
+        android:layout_marginLeft="@dimen/small_padding"
+        android:layout_marginStart="@dimen/small_padding" />
 </LinearLayout>

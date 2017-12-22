@@ -13,27 +13,22 @@ import vn.edu.hust.set.tung.musicplayer.model.obj.Song;
 import vn.edu.hust.set.tung.musicplayer.model.observerpattern.PlayManagerObserver;
 import vn.edu.hust.set.tung.musicplayer.model.statepattern.State;
 
-/**
- * Created by tungt on 11/29/17.
- */
-
 public class NManager implements PlayManagerObserver {
 
     public static final String ACTION_PLAY = "play";
     public static final String ACTION_NEXT = "next";
     public static final String ACTION_PREVIOUS = "previous";
-    public static final int KEY_NOTIFICATION_ID = 1;
+    private static final int KEY_NOTIFICATION_ID = 1;
 
-    NotificationManager mNotificationManager;
-    NotificationCompat.Builder mNotificationBuilder;
-    Context mContext;
+    private NotificationManager mNotificationManager;
+    private Context mContext;
 
     public NManager(Context context) {
         mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         this.mContext = context;
     }
 
-    public void displayNotification(boolean isPlaying) {
+    private void displayNotification(boolean isPlaying) {
 
         Intent playIntent = new Intent(ACTION_PLAY);
         playIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -71,7 +66,7 @@ public class NManager implements PlayManagerObserver {
         remoteViewsNormal.setOnClickPendingIntent(R.id.ivNotificationNextNormal, pendingNext);
         remoteViewsNormal.setOnClickPendingIntent(R.id.ivNotificationPreviousNormal, pendingPrevious);
 
-        mNotificationBuilder = new NotificationCompat.Builder(mContext, "")
+        NotificationCompat.Builder mNotificationBuilder = new NotificationCompat.Builder(mContext, "")
                 .setCustomBigContentView(remoteViewsExpanded)
                 .setCustomContentView(remoteViewsNormal)
                 .setAutoCancel(false)
@@ -87,7 +82,7 @@ public class NManager implements PlayManagerObserver {
         mNotificationManager.notify(KEY_NOTIFICATION_ID, mNotificationBuilder.build());
     }
 
-    Song mSong;
+    private Song mSong;
 
     @Override
     public void updateSong(Song song, int index) {

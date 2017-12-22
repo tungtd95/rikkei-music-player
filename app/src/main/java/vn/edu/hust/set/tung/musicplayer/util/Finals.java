@@ -1,9 +1,5 @@
 package vn.edu.hust.set.tung.musicplayer.util;
 
-/**
- * Created by tungt on 11/30/17.
- */
-
 public class Finals {
     public static final String KEY_SHARED_FILE = "last_state";
 
@@ -14,12 +10,7 @@ public class Finals {
     public static final String KEY_PLAY_MANAGER_STATE = "play manager state";
     public static final String KEY_PLAY_MANAGER_PROGRESS = "play manager progress";
 
-    public static final int PLAY_MANAGER_NORMAL = 0;
     public static final int PLAY_MANAGER_REPEAT = 1;
     public static final int PLAY_MANAGER_SHUFFLE = 2;
     public static final int PLAY_MANAGER_SHUFFLE_REPEAT = 3;
-
-    public static final String BY_NAME = "search song name";
-    public static final String BY_ARTIST = "search artist";
-    public static final String BY_ALBUM = "search album";
 }

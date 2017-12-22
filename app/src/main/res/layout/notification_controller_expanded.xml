@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@color/colorPrimaryTrans"
@@ -10,18 +11,20 @@
         android:id="@+id/ivNotificationIcon"
         android:layout_width="@dimen/notification_height"
         android:layout_height="@dimen/notification_height"
-        android:background="@drawable/ic_album_accent" />
+        android:background="@drawable/ic_album_accent"
+        tools:ignore="ContentDescription" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="@dimen/notification_height"
         android:layout_toRightOf="@id/ivNotificationIcon"
         android:orientation="vertical"
-        android:weightSum="1">
+        android:weightSum="1"
+        android:layout_toEndOf="@id/ivNotificationIcon">
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="0dp"
             android:layout_weight="1"
             android:gravity="center_vertical">
 
@@ -48,7 +51,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="@color/colorWhiteTrans"></LinearLayout>
+            android:background="@color/colorWhiteTrans" />
 
         <LinearLayout
             android:id="@+id/llNotificaitonController"
@@ -62,20 +65,25 @@
                 android:layout_width="@dimen/notification_button"
                 android:layout_height="@dimen/notification_button"
                 android:layout_marginRight="@dimen/small_padding"
-                android:background="@drawable/ic_skip_previous" />
+                android:background="@drawable/ic_skip_previous"
+                android:layout_marginEnd="@dimen/small_padding"
+                tools:ignore="ContentDescription" />
 
             <ImageView
                 android:id="@+id/ivNotificationPlay"
                 android:layout_width="@dimen/notification_button_large"
                 android:layout_height="@dimen/notification_button_large"
-                android:src="@drawable/ic_play" />
+                android:src="@drawable/ic_play"
+                tools:ignore="ContentDescription" />
 
             <ImageView
                 android:id="@+id/ivNotificationNext"
                 android:layout_width="@dimen/notification_button"
                 android:layout_height="@dimen/notification_button"
                 android:layout_marginLeft="@dimen/small_padding"
-                android:background="@drawable/ic_skip_next" />
+                android:background="@drawable/ic_skip_next"
+                android:layout_marginStart="@dimen/small_padding"
+                tools:ignore="ContentDescription" />
         </LinearLayout>
     </LinearLayout>
 </RelativeLayout>

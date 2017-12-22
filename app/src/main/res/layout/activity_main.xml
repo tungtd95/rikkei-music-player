@@ -11,9 +11,11 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <include layout="@layout/component_main_content"></include>
-        <include layout="@layout/component_list_song_detail"></include>
-        <include layout="@layout/component_sort_playing_list"></include>
+        <include layout="@layout/component_main_content" />
+
+        <include layout="@layout/component_list_song_detail" />
+
+        <include layout="@layout/component_sort_playing_list" />
     </FrameLayout>
 
     <include layout="@layout/component_play_music_screen" />

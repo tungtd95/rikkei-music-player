@@ -8,20 +8,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.zip.Inflater;
 
 import vn.edu.hust.set.tung.musicplayer.R;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Album;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Artist;
 import vn.edu.hust.set.tung.musicplayer.model.obj.Song;
 
-/**
- * Created by tungt on 12/04/17.
- */
-
 public class ObjectAdapter extends RecyclerView.Adapter<ObjectAdapter.ObjViewHolder> {
 
-    ArrayList<Object> listObj;
+    private ArrayList<Object> listObj;
 
     public ObjectAdapter(ArrayList<Object> list) {
         listObj = list;
@@ -65,12 +60,12 @@ public class ObjectAdapter extends RecyclerView.Adapter<ObjectAdapter.ObjViewHol
         return listObj == null ? 0 : listObj.size();
     }
 
-    public class ObjViewHolder extends RecyclerView.ViewHolder {
+    class ObjViewHolder extends RecyclerView.ViewHolder {
 
         ImageView ivIconObj;
         TextView tvNameObj;
 
-        public ObjViewHolder(View itemView) {
+        ObjViewHolder(View itemView) {
             super(itemView);
             ivIconObj = itemView.findViewById(R.id.ivIconObj);
             tvNameObj = itemView.findViewById(R.id.tvNameObj);

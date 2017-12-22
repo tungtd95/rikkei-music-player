@@ -22,7 +22,7 @@
             android:background="?attr/colorPrimary"
             app:layout_scrollFlags="scroll|enterAlways"
             app:popupTheme="@style/AppTheme.PopupOverlay"
-            app:title="@string/app_name"></android.support.v7.widget.Toolbar>
+            app:title="@string/app_name" />
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -66,6 +66,6 @@
         android:id="@+id/flContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"></FrameLayout>
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
 </android.support.design.widget.CoordinatorLayout>

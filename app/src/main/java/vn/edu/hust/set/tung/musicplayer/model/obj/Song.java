@@ -3,9 +3,6 @@ package vn.edu.hust.set.tung.musicplayer.model.obj;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-/**
- * Created by tungt on 11/23/17.
- */
 
 public class Song implements Parcelable{
     private String id;
@@ -65,10 +62,6 @@ public class Song implements Parcelable{
         return uri;
     }
 
-    public void setUri(String uri) {
-        this.uri = uri;
-    }
-
     public String getArtist() {
         return artist;
     }
@@ -83,14 +76,6 @@ public class Song implements Parcelable{
 
     public void setAlbum(String album) {
         this.album = album;
-    }
-
-    public String getDuration() {
-        return duration;
-    }
-
-    public void setDuration(String duration) {
-        this.duration = duration;
     }
 
     @Override

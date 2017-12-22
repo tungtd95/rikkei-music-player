@@ -8,10 +8,6 @@ import vn.edu.hust.set.tung.musicplayer.model.obj.Song;
 import vn.edu.hust.set.tung.musicplayer.model.observerpattern.SongManagerObservable;
 import vn.edu.hust.set.tung.musicplayer.model.observerpattern.SongManagerObserver;
 
-/**
- * Created by tungt on 11/23/17.
- */
-
 public class SongManager implements SongManagerObservable {
     private ArrayList<Song> listSong;
     private ArrayList<Album> listAlbum;

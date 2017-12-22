@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@color/colorWhiteTrans"
@@ -12,13 +13,16 @@
         android:layout_height="wrap_content"
         android:background="@drawable/ic_toc_black"
         android:layout_marginLeft="@dimen/padding_normal"
-        android:visibility="gone"/>
+        android:visibility="gone"
+        android:layout_marginStart="@dimen/padding_normal"
+        tools:ignore="ContentDescription" />
 
     <ImageView
         android:layout_width="@dimen/item_image_size"
         android:layout_height="@dimen/item_image_size"
         android:layout_margin="@dimen/padding_small"
-        android:background="@drawable/ic_song_accent" />
+        android:background="@drawable/ic_song_accent"
+        tools:ignore="ContentDescription" />
 
     <RelativeLayout
         android:layout_width="match_parent"

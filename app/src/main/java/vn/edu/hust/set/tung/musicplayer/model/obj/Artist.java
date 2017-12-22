@@ -4,14 +4,10 @@ import android.graphics.Bitmap;
 
 import java.util.ArrayList;
 
-/**
- * Created by tungt on 11/23/17.
- */
-
 public class Artist {
     private String name;
     private ArrayList<Song> listSong;
-    Bitmap bitmapCover;
+    private Bitmap bitmapCover;
 
     public Artist(String name) {
         this.name = name;

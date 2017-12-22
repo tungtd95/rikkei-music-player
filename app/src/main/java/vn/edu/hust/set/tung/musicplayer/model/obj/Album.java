@@ -4,10 +4,6 @@ import android.graphics.Bitmap;
 
 import java.util.ArrayList;
 
-/**
- * Created by tungt on 11/23/17.
- */
-
 public class Album {
     private String name;
     private ArrayList<Song> listSong;
