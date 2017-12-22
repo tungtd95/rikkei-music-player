@@ -93,9 +93,6 @@ public class MainActivity extends AppCompatActivity
     private SlidingUpPanelLayout mSlidingUpPanelLayout;
     private LinearLayout llMusicController;
     private LinearLayout llMusicNavigator;
-    private RecyclerView rvRecentListSong;
-    private ImageView ivNextSong;
-    private ImageView ivPreviousSong;
     private TextView tvSongPlaying;
     private TextView tvArtistPlaying;
     private ImageView ivPlayController;
@@ -107,23 +104,15 @@ public class MainActivity extends AppCompatActivity
     private CoordinatorLayout clMainContent;
     private CoordinatorLayout clListSongDetail;
     private ImageView ivCoverDetail;
-    private RecyclerView rvListSorting;
     private CoordinatorLayout clSortPlayingList;
     private MenuItem miChangeView;
     private TabLayout tabLayout;
-    private LinearLayout llMusicPlaying;
     private SeekArc seekBarPlaying;
-    private RecyclerView rvListSearching;
     private SearchView mSearchMain;
     private SearchView svSearchPlayingList;
-    private RecyclerView rvSearchPlayingListMusic;
     private TextView tvSongNamePlaying;
-    private RelativeLayout rlPlayingBack;
-    private RelativeLayout rlReorder;
-    private RelativeLayout rlSortingBack;
     private CollapsingToolbarLayout collapsingToolbar;
     private Toolbar tbListDetail;
-    private RecyclerView rvListDetail;
     private SearchView svDetailList;
 
     private SongFragment songFragment;
@@ -133,7 +122,6 @@ public class MainActivity extends AppCompatActivity
     private SongAdapter mSongAdapter;
     private SongManager mSongManager;
     private static PlayManager mPlayManager;
-    private NManager mNManager;
     private ObjectAdapter mObjectAdapterSearching;
     private SongAdapter mSongSearchPlayListAdapter;
     private SongAdapter mSongListDetailAdapter;
@@ -146,7 +134,7 @@ public class MainActivity extends AppCompatActivity
             PlayManager.MyBinder myBinder = (PlayManager.MyBinder) iBinder;
             mPlayManager = myBinder.getPlayManagerService();
             mPlayManager.register(MainActivity.this);
-            mNManager = new NManager(MainActivity.this);
+            NManager mNManager = new NManager(MainActivity.this);
             mPlayManager.register(mNManager);
             ArrayList<Song> listSong = getLastListSong();
             int indexLast = getLastSongIndex();
@@ -187,9 +175,9 @@ public class MainActivity extends AppCompatActivity
         mSlidingUpPanelLayout.addPanelSlideListener(this);
         llMusicController = findViewById(R.id.llMusicController);
         llMusicNavigator = findViewById(R.id.llMusicPlayingNavigator);
-        rvRecentListSong = findViewById(R.id.rvRecentListSong);
-        ivNextSong = findViewById(R.id.ivNextSong);
-        ivPreviousSong = findViewById(R.id.ivPreviousSong);
+        RecyclerView rvRecentListSong = findViewById(R.id.rvRecentListSong);
+        ImageView ivNextSong = findViewById(R.id.ivNextSong);
+        ImageView ivPreviousSong = findViewById(R.id.ivPreviousSong);
         tvSongPlaying = findViewById(R.id.tvSongPlaying);
         tvArtistPlaying = findViewById(R.id.tvArtistPlaying);
         ivPlayController = findViewById(R.id.ivPlayController);
@@ -201,22 +189,22 @@ public class MainActivity extends AppCompatActivity
         clMainContent = findViewById(R.id.clMainContent);
         clListSongDetail = findViewById(R.id.clListSongDetail);
         ivCoverDetail = findViewById(R.id.ivCoverDetail);
-        rvListSorting = findViewById(R.id.rvListSorting);
+        RecyclerView rvListSorting = findViewById(R.id.rvListSorting);
         clSortPlayingList = findViewById(R.id.clSortPlayingList);
-        llMusicPlaying = findViewById(R.id.llMusicPlaying);
+        LinearLayout llMusicPlaying = findViewById(R.id.llMusicPlaying);
         seekBarPlaying = findViewById(R.id.seekBarPlaying);
-        rvListSearching = findViewById(R.id.rvListSearching);
+        RecyclerView rvListSearching = findViewById(R.id.rvListSearching);
         svSearchPlayingList = findViewById(R.id.svSearchPlayingList);
         ((EditText) svSearchPlayingList.findViewById(android.support.v7.appcompat.R.id.search_src_text))
                 .setTextColor(getResources().getColor(R.color.colorWhite));
-        rvSearchPlayingListMusic = findViewById(R.id.rvSearchPlayingListMusic);
+        RecyclerView rvSearchPlayingListMusic = findViewById(R.id.rvSearchPlayingListMusic);
         tvSongNamePlaying = findViewById(R.id.tvSongNamePlaying);
-        rlPlayingBack = findViewById(R.id.rlPlayingBack);
-        rlReorder = findViewById(R.id.rlReorder);
-        rlSortingBack = findViewById(R.id.rlSortingBack);
+        RelativeLayout rlPlayingBack = findViewById(R.id.rlPlayingBack);
+        RelativeLayout rlReorder = findViewById(R.id.rlReorder);
+        RelativeLayout rlSortingBack = findViewById(R.id.rlSortingBack);
         collapsingToolbar = findViewById(R.id.collapsingToolbar);
         tbListDetail = findViewById(R.id.tbListDetail);
-        rvListDetail = findViewById(R.id.rvListDetail);
+        RecyclerView rvListDetail = findViewById(R.id.rvListDetail);
 
         tbListDetail.inflateMenu(R.menu.menu_detail);
         tbListDetail.setNavigationIcon(R.drawable.ic_arrow_back);
@@ -276,7 +264,7 @@ public class MainActivity extends AppCompatActivity
                 }));
 
         mSongAdapter = new SongAdapter(new ArrayList<Song>());
-        mObjectAdapterSearching = new ObjectAdapter(new ArrayList<Object>());
+        mObjectAdapterSearching = new ObjectAdapter(new ArrayList<>());
         mSongSearchPlayListAdapter = new SongAdapter(new ArrayList<Song>());
 
         rvSearchPlayingListMusic.setLayoutManager(new LinearLayoutManager(
@@ -627,7 +615,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public boolean onQueryTextChange(String newText) {
                 if (newText.isEmpty()) {
-                    mObjectAdapterSearching.setListObj(new ArrayList<Object>());
+                    mObjectAdapterSearching.setListObj(new ArrayList<>());
                     return false;
                 }
                 new SearchAsync().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, newText);
@@ -637,7 +625,7 @@ public class MainActivity extends AppCompatActivity
         mSearchMain.setOnCloseListener(new SearchView.OnCloseListener() {
             @Override
             public boolean onClose() {
-                mObjectAdapterSearching.setListObj(new ArrayList<Object>());
+                mObjectAdapterSearching.setListObj(new ArrayList<>());
                 return false;
             }
         });

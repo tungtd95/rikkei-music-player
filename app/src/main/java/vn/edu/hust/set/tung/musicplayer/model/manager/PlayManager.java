@@ -3,11 +3,10 @@ package vn.edu.hust.set.tung.musicplayer.model.manager;
 import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
-import android.os.AsyncTask;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,11 +21,6 @@ import vn.edu.hust.set.tung.musicplayer.model.statepattern.ShufferingState;
 import vn.edu.hust.set.tung.musicplayer.model.statepattern.ShuffleRepeat;
 import vn.edu.hust.set.tung.musicplayer.model.statepattern.State;
 
-import static vn.edu.hust.set.tung.musicplayer.activity.MainActivity.TAG;
-
-/**
- * Created by tungt on 11/23/17.
- */
 
 public class PlayManager extends Service implements State, PlayManagerObservable {
 
@@ -41,8 +35,8 @@ public class PlayManager extends Service implements State, PlayManagerObservable
     private ArrayList<Song> listSong;
     private ArrayList<PlayManagerObserver> listPlayManagerObserver;
     private MediaPlayer mMediaPlayer;
-    int playingProgress = 0;
-    int playingForProgressBar = 0;
+    int playingProgress;
+    int playingForProgressBar;
 
     public PlayManager() {
         normalState = new NormalState(this);
@@ -63,8 +57,40 @@ public class PlayManager extends Service implements State, PlayManagerObservable
             }
         });
 
-        new ProgressAsync().execute("");
+        playingProgress = 0;
+        playingForProgressBar = 0;
 
+        final Handler handler = new Handler();
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                if (mMediaPlayer.isPlaying()) {
+                    int temp = playingProgress;
+                    try {
+                        temp = mMediaPlayer.getCurrentPosition() / 1000;
+                    } catch (Exception ignored) {
+                    }
+                    if (temp != playingProgress) {
+                        playingProgress = temp;
+                        notifyPlayingProgressChanged(playingProgress);
+                    }
+                    int temp2 = playingForProgressBar;
+                    try {
+                        temp2 = mMediaPlayer.getCurrentPosition();
+                    } catch (Exception ignored) {
+                    }
+                    if (temp2 != playingForProgressBar) {
+                        playingForProgressBar = temp2;
+                        notifyPlayingForProgressBar(
+                                playingForProgressBar,
+                                mMediaPlayer.getDuration()
+                        );
+                    }
+                }
+                handler.postDelayed(this, 1000);
+            }
+        };
+        handler.post(runnable);
     }
 
     public boolean isPlaying() {
@@ -78,7 +104,7 @@ public class PlayManager extends Service implements State, PlayManagerObservable
             mMediaPlayer.setDataSource(listSong.get(indexCurrentSong).getUri());
             mMediaPlayer.prepare();
             mMediaPlayer.seekTo(progressLast);
-            notifyPlayingProgressChanged(progressLast/1000);
+            notifyPlayingProgressChanged(progressLast / 1000);
             notifyPlayingForProgressBar(progressLast, mMediaPlayer.getDuration());
         } catch (IOException e) {
             e.printStackTrace();
@@ -87,9 +113,10 @@ public class PlayManager extends Service implements State, PlayManagerObservable
 
     public void handleSeek(int percent) {
         try {
-            int seekTo = mMediaPlayer.getDuration()*percent/100;
+            int seekTo = mMediaPlayer.getDuration() * percent / 100;
             mMediaPlayer.seekTo(seekTo);
-        }catch (Exception e) {}
+        } catch (Exception ignored) {
+        }
     }
 
     public void handleShuffle() {
@@ -108,7 +135,7 @@ public class PlayManager extends Service implements State, PlayManagerObservable
         } else if (!mMediaPlayer.isPlaying()) {
             try {
                 mMediaPlayer.start();
-            } catch (Exception e) {
+            } catch (Exception ignored) {
             }
         }
         notifyPlayingStateChanged();
@@ -266,68 +293,16 @@ public class PlayManager extends Service implements State, PlayManagerObservable
         return normalState;
     }
 
-    public void setNormalState(State normalState) {
-        this.normalState = normalState;
-    }
-
     public State getShufferingState() {
         return shufferingState;
-    }
-
-    public void setShufferingState(State shufferingState) {
-        this.shufferingState = shufferingState;
     }
 
     public State getRepeatingState() {
         return repeatingState;
     }
 
-    public void setRepeatingState(State repeatingState) {
-        this.repeatingState = repeatingState;
-    }
-
     public State getShuffleRepeatState() {
         return shuffleRepeatState;
-    }
-
-    public void setShuffleRepeatState(State shuffleRepeatState) {
-        this.shuffleRepeatState = shuffleRepeatState;
-    }
-
-    public class ProgressAsync extends AsyncTask<String, Void, Integer> {
-
-        @Override
-        protected Integer doInBackground(String... strings) {
-            while (true) {
-                if (mMediaPlayer.isPlaying()) {
-                    int temp = playingProgress;
-                    try {
-                        temp = mMediaPlayer.getCurrentPosition() / 1000;
-                    } catch (Exception e) {
-                    }
-                    if (temp != playingProgress) {
-                        playingProgress = temp;
-                        notifyPlayingProgressChanged(playingProgress);
-                    }
-                    int temp2 = playingForProgressBar;
-                    try {
-                        temp2 = mMediaPlayer.getCurrentPosition();
-                    } catch (Exception e) {
-                    }
-                    if (temp2 != playingForProgressBar) {
-                        playingForProgressBar = temp2;
-                        notifyPlayingForProgressBar(
-                                playingForProgressBar,
-                                mMediaPlayer.getDuration()
-                        );
-                    }
-                }
-                try {
-                    Thread.sleep(100);
-                } catch (Exception e) {
-                }
-            }
-        }
     }
 
     public int getIndexCurrentSong() {
